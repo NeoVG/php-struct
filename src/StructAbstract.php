@@ -1,0 +1,270 @@
+<?php
+
+declare(strict_types=1);
+
+namespace NeoVg\Struct;
+
+use JsonSerializable;
+
+/**
+ * Class Struct
+ *
+ * This is very useful when you want to return structured data from a function.
+ * Just extend this class and add phpDoc annotations.
+ * See TestStruct for an example.
+ */
+abstract class StructAbstract implements JsonSerializable
+{
+    /**
+     * @var StructProperty[]
+     */
+    private $_properties = [];
+
+    /**
+     * StructAbstract constructor.
+     */
+    public function __construct()
+    {
+        $this->_buildProperties();
+    }
+
+    /**
+     * Returns a struct object with properties set from an array.
+     *
+     * @param array $arrayProperties
+     *
+     * @return StructAbstract
+     */
+    public static function createFromArray(array $arrayProperties): self
+    {
+        $class = static::class;
+        /** @var StructAbstract $struct */
+        $struct = new $class();
+        unset($class);
+
+        foreach ($struct->getProperties() as $property) {
+            $name = $property->getName();
+
+            if (array_key_exists($name, $arrayProperties)) {
+                $value = $arrayProperties[$name];
+
+                if ($value !== null) {
+                    if ($property->containsStruct()) {
+                        /** @var StructAbstract $class */
+                        $class = $property->getType();
+                        $value = $class::createFromArray($arrayProperties[$name]);
+                        unset($class);
+                    } elseif ($property->containsObject()) {
+                        $class = $property->getType();
+                        if (method_exists($class, 'createFromString')) {
+                            $value = $class::createFromString($value);
+                        } else {
+                            $value = new $class($value);
+                        }
+                        unset($class);
+                    }
+
+                    $struct->$name($value);
+                }
+                unset($value);
+            }
+        }
+
+        return $struct;
+    }
+
+    /**
+     * Returns a struct object with properties set from an JSON array.
+     *
+     * @param string $jsonProperties
+     *
+     * @return StructAbstract
+     */
+    public static function createFromJson(string $jsonProperties): self
+    {
+        return self::createFromArray(json_decode($jsonProperties, true));
+    }
+
+    /**
+     * Magic setter for the properties of the struct.
+     * Returns $this so calls can be chained.
+     *
+     * @param string $name Name of the property to be set.
+     * @param array  $args Will always only have one element containing the value to be put into the property.
+     *
+     * @return $this
+     * @throws \BadMethodCallException Thrown if non existent property was accessed.
+     * @throws \ArgumentCountError Thrown if value to set is not passed.
+     * @throws \TypeError Thrown if invalid type was put into property.
+     */
+    public final function __call(string $name, array $args): StructAbstract
+    {
+        if (!($property = $this->_getProperty($name))) {
+            throw new \BadMethodCallException(sprintf('Call to undefined method %s::%s()', static::class, $name));
+        }
+        if (!array_key_exists(0, $args)) {
+            throw new \ArgumentCountError(sprintf('%s::%s() expects exactly 1 parameter, 0 given', static::class, $name));
+        }
+        $property->setValue($args[0] ?? null);
+
+        return $this;
+    }
+
+    /**
+     * Magic getter for the properties of the struct.
+     * Throws a notice if you try to access a non-existing property.
+     *
+     * @param string $name Name of the property to read.
+     *
+     * @return mixed
+     */
+    public final function __get(string $name)
+    {
+        if (!($property = $this->_getProperty($name))) {
+            trigger_error(sprintf('Undefined property: %s::$%s', static::class, $name), E_USER_NOTICE);
+        }
+
+        return $property->getValue();
+    }
+
+    /**
+     * Reads phpDoc annotations of implementing class and builds internal property structure according to them.
+     */
+    private function _buildProperties(): void
+    {
+        try {
+            $class = static::class;
+            $docCommentString = (new \ReflectionClass($class))->getDocComment() . '';
+            while ($class !== self::class) {
+                $class = get_parent_class($class);
+                $docCommentString = (new \ReflectionClass($class))->getDocComment() . PHP_EOL . $docCommentString;
+            }
+
+            preg_match_all('/@property-read +([\w\\\]+) +\$(\w+)/', $docCommentString, $matches, PREG_SET_ORDER);
+
+            $properties = [];
+            foreach ($matches as $match) {
+                $name = $match[2];
+                $type = $match[1];
+                $value = property_exists(static::class, $name) ? $this->$name : null;
+
+                if (array_filter($properties, function (StructProperty $property) use ($name) {
+                    return $property->getName() === $name;
+                })) {
+                    trigger_error(sprintf('Cannot redefine property $%s', $name), E_USER_NOTICE);
+
+                    continue;
+                }
+
+                try {
+                    $properties[] = new StructProperty(
+                        $name,
+                        $type,
+                        $value
+                    );
+                } catch (\TypeError $e) {
+                    # Never happens, but in case it happens nevertheless, notify Bugsnag
+                    Bugsnag::notifyException($e);
+                }
+            }
+            $this->_properties = $properties;
+        } catch (\ReflectionException $e) {
+            # Never happens, but in case it happens nevertheless, notify Bugsnag
+            Bugsnag::notifyException($e);
+        }
+    }
+
+    /**
+     * Returns a property object.
+     *
+     * @param string $name
+     *
+     * @return StructProperty|null
+     */
+    private function _getProperty(string $name): ?StructProperty
+    {
+        foreach ($this->_properties as $property) {
+            /** @var StructProperty $property */
+            if ($property->getName() === $name) {
+                return $property;
+            }
+        }
+
+        return null;
+    }
+
+    /**
+     * Returns an array of all property objects.
+     *
+     * @return StructProperty[]
+     */
+    public function getProperties(): array
+    {
+        return array_map(function (StructProperty $property) {
+            return new StructProperty(
+                $property->getName(),
+                $property->getType()
+            );
+        }, $this->_properties);
+    }
+
+    /**
+     * Returns the Structs properties as associative array.
+     *
+     * @return array
+     */
+    public function toArray(): array
+    {
+        $propertiesArray = [];
+        foreach ($this->_properties as $property) {
+            if ($property->isSet()) {
+                /** @var StructProperty $property */
+                $propertiesArray[$property->getName()] = $property->getValue();
+            }
+        }
+
+        return $propertiesArray;
+    }
+
+    /**
+     * Specifies data which should be serialized to JSON.
+     *
+     * @return \stdClass
+     */
+    public function jsonSerialize()
+    {
+        $object = new \stdClass();
+        foreach ($this->toArray() as $key => $value) {
+            $object->$key = $value;
+        }
+
+        return $object;
+    }
+
+    /**
+     * Returns a JSON string representation of $this.
+     *
+     * @return string
+     */
+    public function __toString(): string
+    {
+        return json_encode($this, JSON_PRESERVE_ZERO_FRACTION);
+    }
+
+    /**
+     * Returns an array with the virtual property structure and values for beautified output in print_r() or Xdebug.
+     *
+     * @return array
+     */
+    public function __debugInfo()
+    {
+        $properties = [];
+
+        foreach ($this->_properties as $property) {
+            /** @var StructProperty $property */
+            $properties[$property->getName()] = $property->getValue();
+        }
+
+        return $properties;
+    }
+}
