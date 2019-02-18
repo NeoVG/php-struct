@@ -29,6 +29,63 @@ abstract class StructAbstract implements JsonSerializable
     }
 
     /**
+     * Reads phpDoc annotations of implementing class and builds internal property structure according to them.
+     */
+    private function _buildProperties(): void
+    {
+        try {
+            $class = static::class;
+            $docCommentString = (new \ReflectionClass($class))->getDocComment() . '';
+            while ($class !== self::class) {
+                $class = get_parent_class($class);
+                $docCommentString = (new \ReflectionClass($class))->getDocComment() . PHP_EOL . $docCommentString;
+            }
+
+            preg_match_all('/@property(-read)? +([\w\\\]+) +\$(\w+)/', $docCommentString, $matches, PREG_SET_ORDER);
+
+            $properties = [];
+            foreach ($matches as $match) {
+                $name = $match[3];
+                $type = $match[2];
+                $value = property_exists(static::class, $name) ? $this->$name : null;
+
+                if (array_filter($properties, function (StructProperty $property) use ($name) {
+                    return $property->getName() === $name;
+                })) {
+                    trigger_error(sprintf('Cannot redefine property $%s', $name), E_USER_NOTICE);
+
+                    continue;
+                }
+
+                try {
+                    $properties[] = new StructProperty(
+                        $name,
+                        $type,
+                        $value
+                    );
+                } catch (\TypeError $e) {
+                    # Never happens, but in case it happens nevertheless, notify Bugsnag
+                }
+            }
+            $this->_properties = $properties;
+        } catch (\ReflectionException $e) {
+            # Never happens, but in case it happens nevertheless, notify Bugsnag
+        }
+    }
+
+    /**
+     * Returns a struct object with properties set from an JSON array.
+     *
+     * @param string $jsonProperties
+     *
+     * @return StructAbstract
+     */
+    public static function createFromJson(string $jsonProperties): self
+    {
+        return self::createFromArray(json_decode($jsonProperties, true));
+    }
+
+    /**
      * Returns a struct object with properties set from an array.
      *
      * @param array $arrayProperties
@@ -74,15 +131,41 @@ abstract class StructAbstract implements JsonSerializable
     }
 
     /**
-     * Returns a struct object with properties set from an JSON array.
+     * Magic getter for the properties of the struct.
+     * Throws a notice if you try to access a non-existing property.
      *
-     * @param string $jsonProperties
+     * @param string $name Name of the property to read.
      *
-     * @return StructAbstract
+     * @return mixed
      */
-    public static function createFromJson(string $jsonProperties): self
+    public final function __get(string $name)
     {
-        return self::createFromArray(json_decode($jsonProperties, true));
+        if (!($property = $this->_getProperty($name))) {
+            trigger_error(sprintf('Undefined property: %s::$%s', static::class, $name), E_USER_NOTICE);
+
+            return null;
+        }
+
+        return $property->getValue();
+    }
+
+    /**
+     * Magic setter for the properties of the struct.
+     * Throws a notice if you try to access a non-existing property.
+     *
+     *
+     * @param string $name
+     * @param        $value
+     *
+     * @throws \TypeError Thrown if invalid type was put into property.
+     */
+    public final function __set(string $name, $value): void
+    {
+        if (!($property = $this->_getProperty($name))) {
+            trigger_error(sprintf('Undefined property: %s::$%s', static::class, $name), E_USER_NOTICE);
+        }
+
+        $property->setValue($value);
     }
 
     /**
@@ -111,67 +194,72 @@ abstract class StructAbstract implements JsonSerializable
     }
 
     /**
-     * Magic getter for the properties of the struct.
-     * Throws a notice if you try to access a non-existing property.
+     * Returns whether a property value has been set since instanciating this object.
      *
-     * @param string $name Name of the property to read.
+     * @param string $name
      *
-     * @return mixed
+     * @return bool
      */
-    public final function __get(string $name)
+    public function isSet(string $name): bool
     {
         if (!($property = $this->_getProperty($name))) {
-            trigger_error(sprintf('Undefined property: %s::$%s', static::class, $name), E_USER_NOTICE);
+            throw new InvalidPropertyException($name);
         }
 
-        return $property->getValue();
+        return $property->isSet();
     }
 
     /**
-     * Reads phpDoc annotations of implementing class and builds internal property structure according to them.
+     * @param string|null $name
+     *
+     * @return bool
      */
-    private function _buildProperties(): void
+    public function isDirty(string $name = null): bool
     {
-        try {
-            $class = static::class;
-            $docCommentString = (new \ReflectionClass($class))->getDocComment() . '';
-            while ($class !== self::class) {
-                $class = get_parent_class($class);
-                $docCommentString = (new \ReflectionClass($class))->getDocComment() . PHP_EOL . $docCommentString;
-            }
-
-            preg_match_all('/@property-read +([\w\\\]+) +\$(\w+)/', $docCommentString, $matches, PREG_SET_ORDER);
-
-            $properties = [];
-            foreach ($matches as $match) {
-                $name = $match[2];
-                $type = $match[1];
-                $value = property_exists(static::class, $name) ? $this->$name : null;
-
-                if (array_filter($properties, function (StructProperty $property) use ($name) {
-                    return $property->getName() === $name;
-                })) {
-                    trigger_error(sprintf('Cannot redefine property $%s', $name), E_USER_NOTICE);
-
-                    continue;
-                }
-
-                try {
-                    $properties[] = new StructProperty(
-                        $name,
-                        $type,
-                        $value
-                    );
-                } catch (\TypeError $e) {
-                    # Never happens, but in case it happens nevertheless, notify Bugsnag
-                    Bugsnag::notifyException($e);
+        if ($name === null) {
+            foreach ($this->_properties as $property) {
+                if ($property->isDirty()) {
+                    return true;
                 }
             }
-            $this->_properties = $properties;
-        } catch (\ReflectionException $e) {
-            # Never happens, but in case it happens nevertheless, notify Bugsnag
-            Bugsnag::notifyException($e);
+
+            return false;
         }
+
+        if (!($property = $this->_getProperty($name))) {
+            throw new InvalidPropertyException($name);
+        }
+
+        return $property->isDirty();
+    }
+
+    /**
+     * @param string $name
+     * @param bool   $isDirty
+     *
+     * @return StructAbstract
+     */
+    public function setDirty(string $name, bool $isDirty): self
+    {
+        if (!($property = $this->_getProperty($name))) {
+            throw new InvalidPropertyException($name);
+        }
+
+        $property->setDirty($isDirty);
+
+        return $this;
+    }
+
+    /**
+     * @return StructAbstract
+     */
+    public function clean(): self
+    {
+        foreach ($this->_properties as $property) {
+            $property->setClean();
+        }
+
+        return $this;
     }
 
     /**

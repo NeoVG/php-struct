@@ -37,6 +37,11 @@ class StructProperty
     protected $_isSet = false;
 
     /**
+     * @var bool
+     */
+    protected $_isDirty = false;
+
+    /**
      * StructProperty constructor.
      *
      * @param string $name
@@ -95,14 +100,35 @@ class StructProperty
     }
 
     /**
+     * @param $value
+     *
+     * @return StructProperty
+     */
+    protected function _setDefaultValue($value): self
+    {
+        if (!$this->_isValidType($value)) {
+            throw new \TypeError(sprintf('Default value for %s::%s must be of type %s, %s given',
+                static::class,
+                $this->_name,
+                $this->_type,
+                gettype($value)
+            ));
+        }
+
+        $this->_defaultValue = $value;
+
+        return $this->setValue($value)->setClean();
+    }
+
+    /**
      * Sets the value of the property.
      *
      * @param mixed $value
-     * @param bool $isDefault
      *
+     * @return StructProperty
      * @throws \TypeError Thrown if an invalid type was passed.
      */
-    public function setValue($value, bool $isDefault = false): void
+    public function setValue($value): self
     {
         if (!$this->_isValidType($value)) {
             throw new \TypeError(sprintf('Argument 1 passed to %s::%s() must be of type %s, %s given',
@@ -114,12 +140,9 @@ class StructProperty
         }
 
         $this->_value = $value;
-
-        if ($isDefault) {
-            $this->_defaultValue = $value;
-        }
-
         $this->_isSet = true;
+
+        return $this->setDirty();
     }
 
     /**
@@ -143,6 +166,40 @@ class StructProperty
     }
 
     /**
+     * Returns whether this propery has been set since its creation.
+     *
+     * @return bool
+     */
+    public function isDirty(): bool
+    {
+        return $this->_isDirty;
+    }
+
+    /**
+     * Shortcut for setting this property to be clean.
+     *
+     * @return StructProperty
+     */
+    public function setClean(): self
+    {
+        return $this->setDirty(false);
+    }
+
+    /**
+     * Indicates that this property has been set since its creation.
+     *
+     * @param bool $isDirty
+     *
+     * @return StructProperty
+     */
+    public function setDirty(bool $isDirty = true): self
+    {
+        $this->_isDirty = $isDirty;
+
+        return $this;
+    }
+
+    /**
      * Normalizes the type read from the phpDoc annotation to be compatible with gettype().
      *
      * @param string $type
@@ -156,6 +213,8 @@ class StructProperty
                 return 'boolean';
             case 'int':
                 return 'integer';
+            case 'float':
+                return 'double';
             default:
                 return $type;
         }
