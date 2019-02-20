@@ -18,7 +18,7 @@ abstract class StructAbstract implements JsonSerializable
     /**
      * @var StructProperty[]
      */
-    private $_properties = [];
+    protected $_properties = [];
 
     /**
      * StructAbstract constructor.
@@ -31,7 +31,7 @@ abstract class StructAbstract implements JsonSerializable
     /**
      * Reads phpDoc annotations of implementing class and builds internal property structure according to them.
      */
-    private function _buildProperties(): void
+    protected function _buildProperties(): void
     {
         try {
             $class = static::class;
@@ -269,7 +269,7 @@ abstract class StructAbstract implements JsonSerializable
      *
      * @return StructProperty|null
      */
-    private function _getProperty(string $name): ?StructProperty
+    protected function _getProperty(string $name): ?StructProperty
     {
         foreach ($this->_properties as $property) {
             /** @var StructProperty $property */
