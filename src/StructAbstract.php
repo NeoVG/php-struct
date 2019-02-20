@@ -163,6 +163,8 @@ abstract class StructAbstract implements JsonSerializable
     {
         if (!($property = $this->_getProperty($name))) {
             trigger_error(sprintf('Undefined property: %s::$%s', static::class, $name), E_USER_NOTICE);
+
+            return;
         }
 
         $property->setValue($value);
