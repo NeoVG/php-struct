@@ -171,7 +171,26 @@ abstract class StructAbstract implements JsonSerializable
     }
 
     /**
-     * Magic setter for the properties of the struct.
+     * Magic isset for the properties of the struct.
+     * Throws a notice if you try to access a non-existing property.
+     *
+     * @param string $name
+     *
+     * @return bool|void
+     */
+    public final function __isset(string $name)
+    {
+        if (!($property = $this->_getProperty($name))) {
+            trigger_error(sprintf('Undefined property: %s::$%s', static::class, $name), E_USER_NOTICE);
+
+            return;
+        }
+
+        return $property->isSet();
+    }
+
+    /**
+     * Fluent setter for the properties of the struct.
      * Returns $this so calls can be chained.
      *
      * @param string $name Name of the property to be set.
@@ -193,6 +212,40 @@ abstract class StructAbstract implements JsonSerializable
         $property->setValue($args[0] ?? null);
 
         return $this;
+    }
+
+    /**
+     * Returns a property object.
+     *
+     * @param string $name
+     *
+     * @return StructProperty|null
+     */
+    protected function _getProperty(string $name): ?StructProperty
+    {
+        foreach ($this->_properties as $property) {
+            /** @var StructProperty $property */
+            if ($property->getName() === $name) {
+                return $property;
+            }
+        }
+
+        return null;
+    }
+
+    /**
+     * Returns an array of all property objects.
+     *
+     * @return StructProperty[]
+     */
+    public function getProperties(): array
+    {
+        return array_map(function (StructProperty $property) {
+            return new StructProperty(
+                $property->getName(),
+                $property->getType()
+            );
+        }, $this->_properties);
     }
 
     /**
@@ -253,6 +306,22 @@ abstract class StructAbstract implements JsonSerializable
     }
 
     /**
+     * Returns the dirty-status of a property.
+     *
+     * @return StructProperty[]
+     */
+    public function getDirty(): array
+    {
+        return array_values(
+            array_filter($this->_properties, function (StructProperty $property) {
+                return $property->isDirty();
+            })
+        );
+    }
+
+    /**
+     * Marks all properties as not dirty.
+     *
      * @return StructAbstract
      */
     public function clean(): self
@@ -262,40 +331,6 @@ abstract class StructAbstract implements JsonSerializable
         }
 
         return $this;
-    }
-
-    /**
-     * Returns a property object.
-     *
-     * @param string $name
-     *
-     * @return StructProperty|null
-     */
-    protected function _getProperty(string $name): ?StructProperty
-    {
-        foreach ($this->_properties as $property) {
-            /** @var StructProperty $property */
-            if ($property->getName() === $name) {
-                return $property;
-            }
-        }
-
-        return null;
-    }
-
-    /**
-     * Returns an array of all property objects.
-     *
-     * @return StructProperty[]
-     */
-    public function getProperties(): array
-    {
-        return array_map(function (StructProperty $property) {
-            return new StructProperty(
-                $property->getName(),
-                $property->getType()
-            );
-        }, $this->_properties);
     }
 
     /**
