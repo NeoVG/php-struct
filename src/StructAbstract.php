@@ -355,6 +355,11 @@ abstract class StructAbstract implements JsonSerializable
             $properties[$property->getName()] = $property->getValue();
         }
 
+        $properties['[isDirty]'] = $this->isDirty();
+        $properties['[dirty]'] = array_map(function (StructProperty $property) {
+            return $property->getName();
+        }, $this->getDirty());
+
         return $properties;
     }
 }
