@@ -126,6 +126,7 @@ abstract class StructAbstract implements JsonSerializable
                 unset($value);
             }
         }
+        $struct->clean();
 
         return $struct;
     }
