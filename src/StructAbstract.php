@@ -114,7 +114,7 @@ abstract class StructAbstract implements JsonSerializable
                     } elseif ($property->containsObject()) {
                         $class = $property->getType();
                         if (method_exists($class, 'createFromString')) {
-                            $value = $class::createFromString($value);
+                            $value = $class::createFromString((string)$value);
                         } else {
                             $value = new $class($value);
                         }
@@ -321,6 +321,23 @@ abstract class StructAbstract implements JsonSerializable
                 return $property->isDirty();
             })
         );
+    }
+
+    /**
+     * Returns a new object containing only dirty properties. Useful for sending changes to APIs.
+     *
+     * @return StructAbstract
+     */
+    public function withDirtyPropertiesOnly(): self
+    {
+        $dirtyProperties = array_filter($this->_properties, function (StructProperty $property) {
+            return $property->isDirty();
+        });
+        $dirtyPropertiesArray = [];
+        foreach ($dirtyProperties as $property) {
+            $dirtyPropertiesArray[$property->getName()] = $property->getValue();
+        }
+        return static::createFromArray($dirtyPropertiesArray);
     }
 
     /**
