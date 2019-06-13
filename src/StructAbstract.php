@@ -16,6 +16,16 @@ use JsonSerializable;
 abstract class StructAbstract implements JsonSerializable
 {
     /**
+     * @var StructAbstract
+     */
+    protected $_parent;
+
+    /**
+     * @var string
+     */
+    protected $_nameInParent;
+
+    /**
      * @var StructProperty[]
      */
     protected $_properties = [];
@@ -23,8 +33,11 @@ abstract class StructAbstract implements JsonSerializable
     /**
      * StructAbstract constructor.
      */
-    public function __construct()
+    public function __construct(?StructAbstract $parent = null, ?string $nameInParent = null)
     {
+        $this->_parent = $parent;
+        $this->_nameInParent = $nameInParent;
+
         $this->_buildProperties();
     }
 
@@ -57,15 +70,12 @@ abstract class StructAbstract implements JsonSerializable
                     continue;
                 }
 
-                try {
-                    $properties[] = new StructProperty(
-                        $name,
-                        $type,
-                        $value
-                    );
-                } catch (\TypeError $e) {
-                    # Never happens, but in case it happens nevertheless, notify Bugsnag
-                }
+                # Might throw a TypeError if the default $value has the wrong type
+                $properties[] = new StructProperty(
+                    $name,
+                    $type,
+                    $value
+                );
             }
             $this->_properties = $properties;
         } catch (\ReflectionException $e) {
@@ -92,11 +102,11 @@ abstract class StructAbstract implements JsonSerializable
      *
      * @return self
      */
-    public static function createFromArray(array $arrayProperties): self
+    public static function createFromArray(array $arrayProperties, ?StructAbstract $parent = null, ?string $nameInParent = null): self
     {
         $class = static::class;
         /** @var StructAbstract $struct */
-        $struct = new $class();
+        $struct = new $class($parent, $nameInParent);
         unset($class);
 
         foreach ($struct->getProperties() as $property) {
@@ -109,7 +119,7 @@ abstract class StructAbstract implements JsonSerializable
                     if ($property->containsStruct()) {
                         /** @var StructAbstract $class */
                         $class = $property->getType();
-                        $value = $class::createFromArray($arrayProperties[$name]);
+                        $value = $class::createFromArray($arrayProperties[$name], $struct, $name);
                         unset($class);
                     } elseif ($property->containsObject()) {
                         $class = $property->getType();
@@ -128,6 +138,25 @@ abstract class StructAbstract implements JsonSerializable
         }
 
         return $struct;
+    }
+
+    /**
+     * Magic isset for the properties of the struct.
+     * Throws a notice if you try to access a non-existing property.
+     *
+     * @param string $name
+     *
+     * @return bool|void
+     */
+    public final function __isset(string $name)
+    {
+        if (!($property = $this->_getProperty($name))) {
+            trigger_error(sprintf('Undefined property: %s::$%s', static::class, $name), E_USER_NOTICE);
+
+            return;
+        }
+
+        return $property->isSet();
     }
 
     /**
@@ -168,25 +197,8 @@ abstract class StructAbstract implements JsonSerializable
         }
 
         $property->setValue($value);
-    }
 
-    /**
-     * Magic isset for the properties of the struct.
-     * Throws a notice if you try to access a non-existing property.
-     *
-     * @param string $name
-     *
-     * @return bool|void
-     */
-    public final function __isset(string $name)
-    {
-        if (!($property = $this->_getProperty($name))) {
-            trigger_error(sprintf('Undefined property: %s::$%s', static::class, $name), E_USER_NOTICE);
-
-            return;
-        }
-
-        return $property->isSet();
+        $this->_setDirtyStateInParent();
     }
 
     /**
@@ -211,7 +223,19 @@ abstract class StructAbstract implements JsonSerializable
         }
         $property->setValue($args[0] ?? null);
 
+        $this->_setDirtyStateInParent();
+
         return $this;
+    }
+
+    /**
+     * If this struct itself is a property in another struct, then its dirty-state there needs to be updated if the dirty-state of one of its properties changes.
+     */
+    protected function _setDirtyStateInParent(): void
+    {
+        if ($this->_parent !== null) {
+            $this->_parent->setDirty($this->_nameInParent, $this->isDirty());
+        }
     }
 
     /**
@@ -265,6 +289,20 @@ abstract class StructAbstract implements JsonSerializable
     }
 
     /**
+     * Returns a list of all set properties.
+     *
+     * @return StructProperty[]
+     */
+    public function getSet(): array
+    {
+        return array_values(
+            array_filter($this->_properties, function (StructProperty $property) {
+                return $property->isSet();
+            })
+        );
+    }
+
+    /**
      * Returns whether any of this structs properties has been changed since the objects initialisation.
      *
      * @param string|null $name
@@ -306,11 +344,13 @@ abstract class StructAbstract implements JsonSerializable
 
         $property->setDirty($isDirty);
 
+        $this->_setDirtyStateInParent();
+
         return $this;
     }
 
     /**
-     * Returns the dirty-status of a property.
+     * Returns a list of all dirty properties.
      *
      * @return StructProperty[]
      */
@@ -337,6 +377,7 @@ abstract class StructAbstract implements JsonSerializable
         foreach ($dirtyProperties as $property) {
             $dirtyPropertiesArray[$property->getName()] = $property->getValue();
         }
+
         return static::createFromArray($dirtyPropertiesArray);
     }
 
@@ -350,6 +391,8 @@ abstract class StructAbstract implements JsonSerializable
         foreach ($this->_properties as $property) {
             $property->setClean();
         }
+
+        $this->_setDirtyStateInParent();
 
         return $this;
     }
@@ -404,17 +447,22 @@ abstract class StructAbstract implements JsonSerializable
      */
     public function __debugInfo()
     {
-        $properties = [];
-
         foreach ($this->_properties as $property) {
             /** @var StructProperty $property */
             $properties[$property->getName()] = $property->getValue();
         }
 
-        $properties['[isDirty]'] = $this->isDirty();
-        $properties['[dirty]'] = array_map(function (StructProperty $property) {
-            return $property->getName();
-        }, $this->getDirty());
+        $properties += [
+            '[setProperties]'   => array_map(function (StructProperty $property) {
+                return $property->getName();
+            }, $this->getSet()),
+            '[isDirty]'         => $this->isDirty(),
+            '[dirtyProperties]' => array_map(function (StructProperty $property) {
+                return $property->getName();
+            }, $this->getDirty()),
+            '[_parentStruct]'         => $this->_parent,
+            '[_nameInParentStruct]'   => $this->_nameInParent,
+        ];
 
         return $properties;
     }

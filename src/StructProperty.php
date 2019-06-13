@@ -29,7 +29,7 @@ class StructProperty
     /**
      * @var mixed
      */
-    private $_defaultValue;
+    private $_originalValue = null;
 
     /**
      * @var bool
@@ -50,12 +50,12 @@ class StructProperty
      *
      * @throws \TypeError
      */
-    public function __construct(string $name, string $type, $value = null)
+    public function __construct(string $name, string $type, $defaultValue = null)
     {
         $this->_name = $name;
         $this->_type = $this->_normalizeType($type);
-        if ($value !== null) {
-            $this->setValue($value, true);
+        if ($defaultValue !== null) {
+            $this->setValue($defaultValue);
         }
     }
 
@@ -100,27 +100,6 @@ class StructProperty
     }
 
     /**
-     * @param $value
-     *
-     * @return StructProperty
-     */
-    protected function _setDefaultValue($value): self
-    {
-        if (!$this->_isValidType($value)) {
-            throw new \TypeError(sprintf('Default value for %s::%s must be of type %s, %s given',
-                static::class,
-                $this->_name,
-                $this->_type,
-                gettype($value)
-            ));
-        }
-
-        $this->_defaultValue = $value;
-
-        return $this->setValue($value)->setClean();
-    }
-
-    /**
      * Sets the value of the property.
      *
      * @param mixed $value
@@ -140,7 +119,12 @@ class StructProperty
         }
 
         $this->_value = $value;
-        $this->_isSet = true;
+
+        if (!$this->_isSet) {
+            $this->_isSet = true;
+
+            return $this->setDirty(true);
+        }
 
         return $this->setDirty();
     }
@@ -182,6 +166,10 @@ class StructProperty
      */
     public function setClean(): self
     {
+        if ($this->containsStruct()) {
+            $this->_value->clean();
+        }
+
         return $this->setDirty(false);
     }
 
@@ -192,8 +180,14 @@ class StructProperty
      *
      * @return StructProperty
      */
-    public function setDirty(bool $isDirty = true): self
+    public function setDirty(bool $isDirty = null): self
     {
+        if ($isDirty === null) {
+            $isDirty = $this->_value !== $this->_originalValue;
+        } elseif ($isDirty === false) {
+            $this->_originalValue = $this->_value;
+        }
+
         $this->_isDirty = $isDirty;
 
         return $this;
