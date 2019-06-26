@@ -411,12 +411,8 @@ abstract class StructAbstract implements JsonSerializable
                 /** @var StructProperty $property */
                 $value = $property->getValue();
 
-                if (is_object($value)) {
-                    if (method_exists($value, 'toArray')) {
-                        $value = $value->toArray();
-                    } else {
-                        $value = (string)$value;
-                    }
+                if (is_object($value) && method_exists($value, 'toArray')) {
+                    $value = $value->toArray();
                 }
 
                 $propertiesArray[$property->getName()] = $value;
