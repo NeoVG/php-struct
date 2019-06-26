@@ -130,9 +130,10 @@ abstract class StructAbstract implements JsonSerializable
                         }
                         unset($class);
                     }
-
-                    $struct->$name($value);
                 }
+
+                $struct->$name($value);
+
                 unset($value);
             }
         }
@@ -221,7 +222,7 @@ abstract class StructAbstract implements JsonSerializable
         if (!array_key_exists(0, $args)) {
             throw new \ArgumentCountError(sprintf('%s::%s() expects exactly 1 parameter, 0 given', static::class, $name));
         }
-        $property->setValue($args[0] ?? null);
+        $property->setValue($args[0]);
 
         $this->_setDirtyStateInParent();
 
@@ -408,7 +409,17 @@ abstract class StructAbstract implements JsonSerializable
         foreach ($this->_properties as $property) {
             if ($property->isSet()) {
                 /** @var StructProperty $property */
-                $propertiesArray[$property->getName()] = $property->getValue();
+                $value = $property->getValue();
+
+                if (is_object($value)) {
+                    if (method_exists($value, 'toArray')) {
+                        $value = $value->toArray();
+                    } else {
+                        $value = (string)$value;
+                    }
+                }
+
+                $propertiesArray[$property->getName()] = $value;
             }
         }
 
@@ -423,8 +434,11 @@ abstract class StructAbstract implements JsonSerializable
     public function jsonSerialize()
     {
         $object = new \stdClass();
-        foreach ($this->toArray() as $key => $value) {
-            $object->$key = $value;
+        foreach ($this->_properties as $property) {
+            if ($property->isSet()) {
+                $key = $property->getName();
+                $object->$key = $property->getValue();
+            }
         }
 
         return $object;
@@ -453,15 +467,15 @@ abstract class StructAbstract implements JsonSerializable
         }
 
         $properties += [
-            '[setProperties]'   => array_map(function (StructProperty $property) {
+            '[setProperties]'       => array_map(function (StructProperty $property) {
                 return $property->getName();
             }, $this->getSet()),
-            '[isDirty]'         => $this->isDirty(),
-            '[dirtyProperties]' => array_map(function (StructProperty $property) {
+            '[isDirty]'             => $this->isDirty(),
+            '[dirtyProperties]'     => array_map(function (StructProperty $property) {
                 return $property->getName();
             }, $this->getDirty()),
-            '[_parentStruct]'         => $this->_parent,
-            '[_nameInParentStruct]'   => $this->_nameInParent,
+            '[_parentStruct]'       => $this->_parent,
+            '[_nameInParentStruct]' => $this->_nameInParent,
         ];
 
         return $properties;
