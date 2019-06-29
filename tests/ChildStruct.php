@@ -7,7 +7,8 @@ namespace NeoVg\Struct\Test;
 use NeoVg\Struct\StructAbstract;
 
 /**
- * @property string $value
+ * @property string $value1
+ * @property string $value2
  */
 class ChildStruct extends StructAbstract
 {

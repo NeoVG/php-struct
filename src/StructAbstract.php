@@ -32,6 +32,9 @@ abstract class StructAbstract implements JsonSerializable
 
     /**
      * StructAbstract constructor.
+     *
+     * @param StructAbstract|null $parent
+     * @param string|null         $nameInParent
      */
     public function __construct(?StructAbstract $parent = null, ?string $nameInParent = null)
     {
@@ -98,7 +101,9 @@ abstract class StructAbstract implements JsonSerializable
     /**
      * Returns a struct object with properties set from an array.
      *
-     * @param array $arrayProperties
+     * @param array               $arrayProperties
+     * @param StructAbstract|null $parent
+     * @param string|null         $nameInParent
      *
      * @return self
      */
@@ -376,7 +381,14 @@ abstract class StructAbstract implements JsonSerializable
         });
         $dirtyPropertiesArray = [];
         foreach ($dirtyProperties as $property) {
-            $dirtyPropertiesArray[$property->getName()] = $property->getValue();
+            $value = $property->getValue();
+
+            if ($property->containsStruct()) {
+                /** @var StructAbstract $value */
+                $value = $value->withDirtyPropertiesOnly()->toArray();
+            }
+
+            $dirtyPropertiesArray[$property->getName()] = $value;
         }
 
         return static::createFromArray($dirtyPropertiesArray);
@@ -457,6 +469,8 @@ abstract class StructAbstract implements JsonSerializable
      */
     public function __debugInfo()
     {
+        $properties = [];
+
         foreach ($this->_properties as $property) {
             /** @var StructProperty $property */
             $properties[$property->getName()] = $property->getValue();
