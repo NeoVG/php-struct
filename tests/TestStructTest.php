@@ -26,6 +26,7 @@ class TestStructTest extends TestCase
             ->double(0.0)
             ->string('')
             ->array([])
+            ->callable(function () {})
             ->stdClass(new \stdClass());
     }
 
@@ -75,6 +76,12 @@ class TestStructTest extends TestCase
         $this->assertInstanceOf(TestStruct::class, $this->_instance->stdClass(new \stdClass));
         $this->assertInternalType('object', $this->_instance->stdClass);
         $this->assertInstanceOf(\stdClass::class, $this->_instance->stdClass);
+    }
+
+    public function testCallable()
+    {
+        $this->assertInstanceOf(TestStruct::class, $this->_instance->callable(function () {}));
+        $this->assertIsCallable($this->_instance->callable);
     }
 
     public function testDefault()

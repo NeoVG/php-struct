@@ -9,8 +9,8 @@ use NeoVg\Struct\StructAbstract;
 /**
  * @property \NeoVg\Struct\Test\ChildStruct $child
  *
- * @method static $this createFromArray(array $arrayProperties)
- * @method $this clean()
+ * @method static self createFromArray(array $arrayProperties)
+ * @method self clean()
  */
 class ParentStruct extends StructAbstract
 {

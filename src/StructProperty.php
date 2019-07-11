@@ -226,10 +226,12 @@ class StructProperty
         if ($variable === null) {
             return true;
         }
-        if (gettype($variable) !== 'object') {
-            return gettype($variable) === $this->_type;
-        } else {
+        if (is_callable($variable)) {
+            return $this->_type === 'callable';
+        } elseif (gettype($variable) === 'object') {
             return $variable instanceof $this->_type;
+        } else {
+            return gettype($variable) === $this->_type;
         }
     }
 }
