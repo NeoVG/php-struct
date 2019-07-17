@@ -107,4 +107,16 @@ class SimpleTestStructTest extends TestCase
         $this->assertIsString($instance->default);
         $this->assertEquals('default value', $instance->default);
     }
+
+    /**
+     *
+     */
+    public function testCreateFromArrayWithAdditionalProperties()
+    {
+        $instance = SimpleTestStruct::createFromArray([
+            'foo' => 'foo',
+            'bar' => 'bar',
+        ]);
+        $this->assertEquals('{"default":"default value"}', json_encode($instance));
+    }
 }

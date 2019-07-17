@@ -124,6 +124,7 @@ abstract class StructAbstract implements JsonSerializable
                     if ($property->containsStruct()) {
                         /** @var StructAbstract $class */
                         $class = $property->getType();
+
                         $value = $class::createFromArray($arrayProperties[$name], $struct, $name);
                         unset($class);
                     } elseif ($property->containsObject()) {
@@ -381,14 +382,11 @@ abstract class StructAbstract implements JsonSerializable
         });
         $dirtyPropertiesArray = [];
         foreach ($dirtyProperties as $property) {
-            $value = $property->getValue();
-
-            if ($property->containsStruct()) {
-                /** @var StructAbstract $value */
-                $value = $value->withDirtyPropertiesOnly()->toArray();
+            if ($property->containsStruct() && $property->getValue() !== null) {
+                $dirtyPropertiesArray[$property->getName()] = $property->getValue()->withDirtyPropertiesOnly()->toArray();
+            } else {
+                $dirtyPropertiesArray[$property->getName()] = $property->getValue();
             }
-
-            $dirtyPropertiesArray[$property->getName()] = $value;
         }
 
         return static::createFromArray($dirtyPropertiesArray);
