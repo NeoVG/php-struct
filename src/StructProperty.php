@@ -166,7 +166,7 @@ class StructProperty
      */
     public function setClean(): self
     {
-        if ($this->containsStruct()) {
+        if ($this->containsStruct() && $this->_value !== null) {
             $this->_value->clean();
         }
 
