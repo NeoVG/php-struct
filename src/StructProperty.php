@@ -226,7 +226,7 @@ class StructProperty
         if ($variable === null) {
             return true;
         }
-        if (is_callable($variable)) {
+        if ($variable instanceof \Closure) {
             return $this->_type === 'callable';
         } elseif (gettype($variable) === 'object') {
             return $variable instanceof $this->_type;
