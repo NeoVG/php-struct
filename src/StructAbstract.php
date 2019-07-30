@@ -121,19 +121,16 @@ abstract class StructAbstract implements JsonSerializable
                 $value = $arrayProperties[$name];
 
                 if ($value !== null) {
-                    if ($property->containsStruct()) {
-                        /** @var StructAbstract $class */
+                    if ($property->containsObject()) {
                         $class = $property->getType();
 
-                        $value = $class::createFromArray($arrayProperties[$name], $struct, $name);
-                        unset($class);
-                    } elseif ($property->containsObject()) {
-                        $class = $property->getType();
-                        if (method_exists($class, 'createFromString')) {
-                            $value = $class::createFromString((string)$value);
-                        } else {
-                            $value = new $class($value);
+                        if ($property->containsStruct()) {
+                            /** @var StructAbstract $class */
+                            $value = $class::createFromArray($value, $struct, $name);
+                        } elseif (is_string($value) && method_exists($class, 'createFromString')) {
+                            $value = $class::createFromString($value);
                         }
+
                         unset($class);
                     }
                 }
