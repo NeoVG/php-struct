@@ -11,6 +11,15 @@ namespace NeoVg\Struct;
  */
 class StructProperty
 {
+    private const INTERNAL_TYPES = [
+        'boolean',
+        'integer',
+        'double',
+        'string',
+        'array',
+        'callable'
+    ];
+
     /**
      * @var string
      */
@@ -46,7 +55,7 @@ class StructProperty
      *
      * @param string $name
      * @param string $type
-     * @param null   $value
+     * @param null   $defaultValue
      *
      * @throws \TypeError
      */
@@ -86,7 +95,7 @@ class StructProperty
      */
     public function containsObject(): bool
     {
-        return class_exists($this->_type);
+        return !in_array($this->_type, static::INTERNAL_TYPES);
     }
 
     /**

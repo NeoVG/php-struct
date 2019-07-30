@@ -13,7 +13,7 @@ use NeoVg\Struct\StructAbstract;
  *
  * @method self bool(bool $value)
  * @method self int(int $value)
- * @method self double(double $value)
+ * @method self float(float $value)
  * @method self string(string $value)
  * @method self array(array $value)
  * @method self stdClass(\stdClass $value)
