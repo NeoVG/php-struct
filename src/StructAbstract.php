@@ -91,7 +91,7 @@ abstract class StructAbstract implements JsonSerializable
      *
      * @param string $jsonProperties
      *
-     * @return self
+     * @return static
      */
     public static function createFromJson(string $jsonProperties): self
     {
@@ -105,7 +105,7 @@ abstract class StructAbstract implements JsonSerializable
      * @param StructAbstract|null $parent
      * @param string|null         $nameInParent
      *
-     * @return self
+     * @return static
      */
     public static function createFromArray(array $arrayProperties, ?StructAbstract $parent = null, ?string $nameInParent = null): self
     {
@@ -338,7 +338,7 @@ abstract class StructAbstract implements JsonSerializable
      * @param string $name
      * @param bool   $isDirty
      *
-     * @return StructAbstract
+     * @return $this
      */
     public function setDirty(string $name, bool $isDirty): self
     {
@@ -392,7 +392,7 @@ abstract class StructAbstract implements JsonSerializable
     /**
      * Marks all properties as not dirty.
      *
-     * @return StructAbstract
+     * @return $this
      */
     public function clean(): self
     {
