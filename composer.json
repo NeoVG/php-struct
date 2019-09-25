@@ -1,7 +1,7 @@
 {
     "name": "neovg/php-struct",
     "description": "A \"C struct\"-like class with type safe attributes and fluent setter interface.",
-    "version": "1.0.15",
+    "version": "1.0.16",
     "type": "library",
     "license": "BSD-3-Clause",
     "keywords": [
