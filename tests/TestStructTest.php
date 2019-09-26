@@ -26,7 +26,8 @@ class TestStructTest extends TestCase
             ->double(0.0)
             ->string('')
             ->array([])
-            ->callable(function () {})
+            ->callable(function () {
+            })
             ->stdClass(new \stdClass());
     }
 
@@ -80,7 +81,8 @@ class TestStructTest extends TestCase
 
     public function testCallable()
     {
-        $this->assertInstanceOf(TestStruct::class, $this->_instance->callable(function () {}));
+        $this->assertInstanceOf(TestStruct::class, $this->_instance->callable(function () {
+        }));
         $this->assertIsCallable($this->_instance->callable);
     }
 

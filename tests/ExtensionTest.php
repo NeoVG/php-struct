@@ -18,7 +18,7 @@ class ExtensionTest extends TestCase
     {
         $instance = ExtendedStruct::createFromArray([
             'extended' => 'yyy',
-            'super' => 'xxx',
+            'super'    => 'xxx',
         ]);
         $this->assertInstanceOf(ExtendedStruct::class, $instance);
         $this->assertInstanceOf(SuperStruct::class, $instance);

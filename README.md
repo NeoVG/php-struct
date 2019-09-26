@@ -5,17 +5,32 @@ A "C struct"-like class with type safe attributes and fluent setter interface.
 
 ~~~~php
 /**
-* @method DataStruct foo(int $value)
-* @method DataStruct bar(string $value)
-*
-* @property-read int    $foo
-* @property-read string $bar
-*/
-class DataStruct extends StructAbstract {}
+ * @method $this foo(int $value)
+ * @method $this bar(string $value)
+ *
+ * @property int    $foo
+ * @property string $bar
+ */
+class DataStruct extends StructAbstract
+{
+}
+
+$data = DataStruct::createFromJson(
+    '{"foo":1,"bar":"something"}'
+);
+
+$data = DataStruct::createFromArray([
+    'foo' => 1,
+    'bar' => 'something',
+]);
  
 $data = (new DataStruct())
     ->foo(1)
     ->bar('something');
+    
+$data = new DataStruct();
+$data->foo = 1;
+$data->bar = 'something';
  
 echo $data->foo; // '1'
 echo $data->bar; // 'something'
@@ -51,10 +66,10 @@ The default value of each property is null. You can override this by adding a pr
 
 ~~~~php
 /**
-* @method WithDefaultStruct someproperty(int $value)
-*
-* @property-read string $someproperty
-*/
+ * @method WithDefaultStruct someproperty(int $value)
+ *
+ * @property-read string $someproperty
+ */
 class WithDefaultStruct extends StructAbstract
 {
     protected $someproperty = 'default value';
@@ -63,4 +78,30 @@ class WithDefaultStruct extends StructAbstract
 $data = new WithDefaultStruct();
  
 echo $data->someproperty; // 'default value'
+~~~~
+
+## Array Properties
+
+~~~~php
+/**
+ * @method $this strings(array $value)
+ * @method $this childs(array $values)
+ *
+ * @property string[] $strings
+ * @property ChildStruct[] $childs
+ */
+class ArrayStruct extends StructAbstract
+{
+}
+
+$array = ArrayStruct::createFromArray([
+    'strings' => ['foo', 'bar'],
+    'childs' => [
+        ['property' => 'value1'],
+        ['property' => 'value2'],
+    ],
+]);
+
+echo $array->strings[0]; // 'foo'
+echo $array->childs[0]->property; // 'value1'
 ~~~~

@@ -11,34 +11,34 @@ namespace NeoVg\Struct;
  */
 class StructProperty
 {
-    private const INTERNAL_TYPES = [
+    protected const INTERNAL_TYPES = [
         'boolean',
         'integer',
         'double',
         'string',
         'array',
-        'callable'
+        'callable',
     ];
 
     /**
      * @var string
      */
-    private $_name;
+    protected $_name;
 
     /**
      * @var string
      */
-    private $_type;
+    protected $_type;
 
     /**
      * @var mixed
      */
-    private $_value;
+    protected $_value;
 
     /**
      * @var mixed
      */
-    private $_originalValue = null;
+    protected $_originalValue = null;
 
     /**
      * @var bool
@@ -56,8 +56,6 @@ class StructProperty
      * @param string $name
      * @param string $type
      * @param null   $defaultValue
-     *
-     * @throws \TypeError
      */
     public function __construct(string $name, string $type, $defaultValue = null)
     {
@@ -209,7 +207,7 @@ class StructProperty
      *
      * @return string
      */
-    private function _normalizeType(string $type): string
+    protected function _normalizeType(string $type): string
     {
         switch ($type) {
             case 'bool':
@@ -230,7 +228,7 @@ class StructProperty
      *
      * @return bool
      */
-    private function _isValidType($variable): bool
+    protected function _isValidType($variable): bool
     {
         if ($variable === null) {
             return true;

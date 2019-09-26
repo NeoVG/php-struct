@@ -57,12 +57,13 @@ abstract class StructAbstract implements JsonSerializable
                 $docCommentString = (new \ReflectionClass($class))->getDocComment() . PHP_EOL . $docCommentString;
             }
 
-            preg_match_all('/@property(-read)? +([\w\\\]+) +\$(\w+)/', $docCommentString, $matches, PREG_SET_ORDER);
+            preg_match_all('/@property(-read)? +([\w\\\]+)(\[\])? +\$(\w+)/', $docCommentString, $matches, PREG_SET_ORDER);
 
             $properties = [];
             foreach ($matches as $match) {
-                $name = $match[3];
+                $name = $match[4];
                 $type = $match[2];
+                $isArray = $match[3];
                 $value = property_exists(static::class, $name) ? $this->$name : null;
 
                 if (array_filter($properties, function (StructProperty $property) use ($name) {
@@ -74,11 +75,19 @@ abstract class StructAbstract implements JsonSerializable
                 }
 
                 # Might throw a TypeError if the default $value has the wrong type
-                $properties[] = new StructProperty(
-                    $name,
-                    $type,
-                    $value
-                );
+                if ($isArray) {
+                    $properties[] = new ArrayStructProperty(
+                        $name,
+                        $type,
+                        $value
+                    );
+                } else {
+                    $properties[] = new StructProperty(
+                        $name,
+                        $type,
+                        $value
+                    );
+                }
             }
             $this->_properties = $properties;
         } catch (\ReflectionException $e) {
@@ -126,7 +135,18 @@ abstract class StructAbstract implements JsonSerializable
 
                         if ($property->containsStruct()) {
                             /** @var StructAbstract $class */
-                            $value = $class::createFromArray($value, $struct, $name);
+
+                            if ($property instanceof ArrayStructProperty) {
+                                foreach (array_keys($value) as $key) {
+                                    if (is_array($value[$key])) {
+                                        $value[$key] = $class::createFromArray($value[$key], $struct, $name);
+                                    }
+
+                                    $property->checkValue($key, $value[$key]);
+                                }
+                            } else {
+                                $value = $class::createFromArray($value, $struct, $name);
+                            }
                         } elseif (is_string($value) && method_exists($class, 'createFromString')) {
                             $value = $class::createFromString($value);
                         }
@@ -269,7 +289,9 @@ abstract class StructAbstract implements JsonSerializable
     public function getProperties(): array
     {
         return array_map(function (StructProperty $property) {
-            return new StructProperty(
+            $class = get_class($property);
+
+            return new $class(
                 $property->getName(),
                 $property->getType()
             );
@@ -472,6 +494,7 @@ abstract class StructAbstract implements JsonSerializable
         }
 
         $properties += [
+            '[properties]'          => $this->_properties,
             '[setProperties]'       => array_map(function (StructProperty $property) {
                 return $property->getName();
             }, $this->getSet()),
