@@ -30,6 +30,22 @@ class ArrayStructProperty extends StructProperty
     }
 
     /**
+     * @return StructProperty
+     */
+    public function setClean(): StructProperty
+    {
+        if ($this->containsStruct() && $this->_value !== null) {
+            foreach (array_keys($this->_value) as $key) {
+                /** @var StructAbstract $value */
+                $value = $this->_value[$key];
+                $value->clean();
+            }
+        }
+
+        return $this->setDirty(false);
+    }
+
+    /**
      * @param $values
      */
     protected function _checkTypes($values): void
