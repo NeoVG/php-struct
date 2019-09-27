@@ -233,6 +233,9 @@ class StructProperty
         if ($variable === null) {
             return true;
         }
+        if ($this->_type === 'mixed') {
+            return true;
+        }
         if ($variable instanceof \Closure) {
             return $this->_type === 'callable';
         } elseif (gettype($variable) === 'object') {
