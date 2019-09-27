@@ -244,4 +244,23 @@ class StructProperty
             return gettype($variable) === $this->_type;
         }
     }
+
+    /**
+     * @return array
+     */
+    public function __debugInfo()
+    {
+        $properties = [];
+
+        foreach (get_object_vars($this) as $key => $value) {
+            $properties[$key] = $value;
+        }
+
+        $properties += [
+            '[containsObject]' => $this->containsObject(),
+            '[containsStruct]' => $this->containsStruct(),
+        ];
+
+        return $properties;
+    }
 }
