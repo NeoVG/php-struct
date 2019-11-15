@@ -147,6 +147,8 @@ abstract class StructAbstract implements JsonSerializable
                             } else {
                                 $value = $class::createFromArray($value, $struct, $name);
                             }
+                        } elseif (is_array($value) && method_exists($class, 'createFromArray')) {
+                            $value = $class::createFromArray($value);
                         } elseif (is_string($value) && method_exists($class, 'createFromString')) {
                             $value = $class::createFromString($value);
                         }
