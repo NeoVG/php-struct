@@ -71,4 +71,29 @@ class ParentStructTest extends TestCase
         $struct2 = $struct1->withDirtyPropertiesOnly();
         $this->assertEquals('{"child":{"value1":"foo"}}', json_encode($struct2));
     }
+
+    /**
+     *
+     */
+    public function testJsonSerialize()
+    {
+        $struct = ParentStruct::createFromArray([
+            'childs' => [
+                [
+                    'value1' => 'foo',
+                ],
+                [
+                    'value1' => 'bar',
+                ],
+            ],
+        ])->clean();
+
+        $array = $struct->toArray();
+        $this->assertIsArray($array['childs']);
+        $this->assertIsArray($array['childs'][0]);
+        $this->assertEquals('foo', $array['childs'][0]['value1']);
+
+        $json = json_encode($struct);
+        $this->assertEquals('{"childs":[{"value1":"foo"},{"value1":"bar"}]}', $json);
+    }
 }
