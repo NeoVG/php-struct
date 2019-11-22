@@ -7,9 +7,9 @@ namespace NeoVg\Struct\Test;
 use NeoVg\Struct\StructAbstract;
 
 /**
- * @method strings(array $values)
- * @method child(\NeoVg\Struct\Test\ChildStruct $value)
- * @method childs(\NeoVg\Struct\Test\ChildStruct[] $values);
+ * @method static strings(array $values)
+ * @method static child(\NeoVg\Struct\Test\ChildStruct $value)
+ * @method static childs(\NeoVg\Struct\Test\ChildStruct[] $values);
  *
  * @property string[]                         $strings
  * @property \NeoVg\Struct\Test\ChildStruct   $child
