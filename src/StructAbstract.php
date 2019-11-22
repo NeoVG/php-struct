@@ -490,30 +490,75 @@ abstract class StructAbstract implements JsonSerializable
     }
 
     /**
-     * Returns an array with the virtual property structure and values for beautified output in print_r() or Xdebug.
+     * Returns an array with the virtual property structure and values for beautified output in var_dump() or Xdebug.
+     *
+     * PLEASE NOTE: This does ONLY work with Xdebug up to version 2.7.1! Newer versions will dump the actual object structure instead.
+     * You can downgrade Xdebug using `pecl uninstall xdebug && pecl install xdebug-2.7.1` or just use the output of StructAbstract::debugInfo().
      *
      * @return array
      */
     public function __debugInfo()
     {
         $properties = [];
+        $propertyMetaDatas = [];
 
         foreach ($this->_properties as $property) {
             /** @var StructProperty $property */
             $properties[$property->getName()] = $property->getValue();
+            $propertyMetaDatas[$property->getName()] = $property->__debugInfo();
         }
 
         $properties += [
-            '[properties]'          => $this->_properties,
+            '[_isDirty]'             => $this->isDirty(),
+            '[properties]'          => $propertyMetaDatas,
             '[setProperties]'       => array_map(function (StructProperty $property) {
                 return $property->getName();
             }, $this->getSet()),
-            '[isDirty]'             => $this->isDirty(),
             '[dirtyProperties]'     => array_map(function (StructProperty $property) {
                 return $property->getName();
-            }, $this->getDirty()),
-            '[_parentStruct]'       => $this->_parent,
-            '[_nameInParentStruct]' => $this->_nameInParent,
+            }, $this->getDirty())
+        ];
+
+        return $properties;
+    }
+
+    /**
+     * Returns an array with the virtual property structure and values for debugging purposes.
+     *
+     * @return array
+     */
+    public function debugInfo()
+    {
+        $properties = [];
+        $propertyMetaDatas = [];
+
+        foreach ($this->_properties as $property) {
+            if ($property instanceof ArrayStructProperty && $property->isSet()) {
+                $properties[$property->getName()] = array_map(
+                    function (StructAbstract $subValue) {
+                        return $subValue->debugInfo();
+                    },
+                    $property->getValue()
+                );
+            } else {
+                /** @var StructProperty $property */
+                $properties[$property->getName()] = (is_object($property->getValue()) && $property->getValue() instanceof StructAbstract)
+                    ? $property->getValue()->debugInfo()
+                    : $property->getValue();
+            }
+
+            $propertyMetaDatas[$property->getName()] = $property->__debugInfo();
+        }
+
+        $properties += [
+            '[_isDirty]'             => $this->isDirty(),
+            '[properties]'          => $propertyMetaDatas,
+            '[setProperties]'       => array_map(function (StructProperty $property) {
+                return $property->getName();
+            }, $this->getSet()),
+            '[dirtyProperties]'     => array_map(function (StructProperty $property) {
+                return $property->getName();
+            }, $this->getDirty())
         ];
 
         return $properties;
