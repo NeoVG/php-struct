@@ -104,7 +104,7 @@ abstract class StructAbstract implements JsonSerializable
      */
     public static function createFromJson(string $jsonProperties): self
     {
-        return self::createFromArray(json_decode($jsonProperties, true));
+        return static::createFromArray(json_decode($jsonProperties, true));
     }
 
     /**
