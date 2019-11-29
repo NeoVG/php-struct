@@ -102,9 +102,8 @@ abstract class StructAbstract implements JsonSerializable
      * @param bool        $exceptionWhenInvalid
      *
      * @return static|null
-     * @throws \JsonException
      */
-    public static function createFromJson(?string $jsonProperties, ?bool $exceptionWhenInvalid = true): ?self
+    public static function createFromJson(?string $jsonProperties, ?bool $exceptionWhenInvalid = false): ?self
     {
         if ($jsonProperties === null) {
             if ($exceptionWhenInvalid) {
