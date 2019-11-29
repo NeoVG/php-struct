@@ -98,13 +98,38 @@ abstract class StructAbstract implements JsonSerializable
     /**
      * Returns a struct object with properties set from an JSON array.
      *
-     * @param string $jsonProperties
+     * @param string|null $jsonProperties
+     * @param bool        $exceptionWhenInvalid
      *
-     * @return static
+     * @return static|null
+     * @throws \JsonException
      */
-    public static function createFromJson(string $jsonProperties): self
+    public static function createFromJson(?string $jsonProperties, ?bool $exceptionWhenInvalid = true): ?self
     {
-        return static::createFromArray(json_decode($jsonProperties, true));
+        if ($jsonProperties === null) {
+            if ($exceptionWhenInvalid) {
+                throw new \JsonException(
+                    'Null input'
+                );
+            }
+
+            return null;
+        }
+
+        $arrayProperties = json_decode($jsonProperties, true);
+
+        if (json_last_error() !== JSON_ERROR_NONE) {
+            if ($exceptionWhenInvalid) {
+                throw new \JsonException(
+                    json_last_error_msg(),
+                    json_last_error()
+                );
+            }
+
+            return null;
+        }
+
+        return static::createFromArray($arrayProperties);
     }
 
     /**
@@ -509,14 +534,14 @@ abstract class StructAbstract implements JsonSerializable
         }
 
         $properties += [
-            '[_isDirty]'             => $this->isDirty(),
-            '[properties]'          => $propertyMetaDatas,
-            '[setProperties]'       => array_map(function (StructProperty $property) {
+            '[_isDirty]'        => $this->isDirty(),
+            '[properties]'      => $propertyMetaDatas,
+            '[setProperties]'   => array_map(function (StructProperty $property) {
                 return $property->getName();
             }, $this->getSet()),
-            '[dirtyProperties]'     => array_map(function (StructProperty $property) {
+            '[dirtyProperties]' => array_map(function (StructProperty $property) {
                 return $property->getName();
-            }, $this->getDirty())
+            }, $this->getDirty()),
         ];
 
         return $properties;
@@ -551,14 +576,14 @@ abstract class StructAbstract implements JsonSerializable
         }
 
         $properties += [
-            '[_isDirty]'             => $this->isDirty(),
-            '[properties]'          => $propertyMetaDatas,
-            '[setProperties]'       => array_map(function (StructProperty $property) {
+            '[_isDirty]'        => $this->isDirty(),
+            '[properties]'      => $propertyMetaDatas,
+            '[setProperties]'   => array_map(function (StructProperty $property) {
                 return $property->getName();
             }, $this->getSet()),
-            '[dirtyProperties]'     => array_map(function (StructProperty $property) {
+            '[dirtyProperties]' => array_map(function (StructProperty $property) {
                 return $property->getName();
-            }, $this->getDirty())
+            }, $this->getDirty()),
         ];
 
         return $properties;

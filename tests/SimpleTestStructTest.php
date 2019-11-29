@@ -109,6 +109,24 @@ class SimpleTestStructTest extends TestCase
     }
 
     /**
+     * @throws \JsonException
+     */
+    public function testCreateFromJsonErrors()
+    {
+        $this->expectException(\JsonException::class);
+        SimpleTestStruct::createFromJson(null);
+
+        $instance = SimpleTestStruct::createFromJson(null, false);
+        $this->assertNull($instance);
+
+        $this->expectException(\JsonException::class);
+        SimpleTestStruct::createFromJson('');
+
+        $instance = SimpleTestStruct::createFromJson('', false);
+        $this->assertNull($instance);
+    }
+
+    /**
      *
      */
     public function testCreateFromArrayWithAdditionalProperties()
