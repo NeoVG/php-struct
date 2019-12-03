@@ -116,13 +116,19 @@ class SimpleTestStructTest extends TestCase
         $this->expectException(\JsonException::class);
         SimpleTestStruct::createFromJson(null);
 
-        $instance = SimpleTestStruct::createFromJson(null, false);
+        $instance = SimpleTestStruct::createFromJsonNullOnError(null);
         $this->assertNull($instance);
 
         $this->expectException(\JsonException::class);
         SimpleTestStruct::createFromJson('');
 
-        $instance = SimpleTestStruct::createFromJson('', false);
+        $instance = SimpleTestStruct::createFromJsonNullOnError('');
+        $this->assertNull($instance);
+
+        $this->expectException(\JsonException::class);
+        SimpleTestStruct::createFromJson('null');
+
+        $instance = SimpleTestStruct::createFromJsonNullOnError('null');
         $this->assertNull($instance);
     }
 

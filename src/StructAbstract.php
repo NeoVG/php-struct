@@ -99,36 +99,56 @@ abstract class StructAbstract implements JsonSerializable
      * Returns a struct object with properties set from an JSON array.
      *
      * @param string|null $jsonProperties
-     * @param bool        $exceptionWhenInvalid
      *
-     * @return static|null
+     * @return static
+     * @throws \JsonException
      */
-    public static function createFromJson(?string $jsonProperties, ?bool $exceptionWhenInvalid = false): ?self
+    public static function createFromJson(?string $jsonProperties): self
     {
         if ($jsonProperties === null) {
-            if ($exceptionWhenInvalid) {
-                throw new \JsonException(
-                    'Null input'
-                );
-            }
+            throw new \JsonException(
+                'Null input'
+            );
+        }
 
-            return null;
+        if ($jsonProperties === '') {
+            throw new \JsonException(
+                'Empty input'
+            );
         }
 
         $arrayProperties = json_decode($jsonProperties, true);
 
         if (json_last_error() !== JSON_ERROR_NONE) {
-            if ($exceptionWhenInvalid) {
-                throw new \JsonException(
-                    json_last_error_msg(),
-                    json_last_error()
-                );
-            }
+            throw new \JsonException(
+                json_last_error_msg(),
+                json_last_error()
+            );
+        }
 
-            return null;
+        if (!is_array($arrayProperties)) {
+            throw new \JsonException(
+                'Decoded input is not an array'
+            );
         }
 
         return static::createFromArray($arrayProperties);
+    }
+
+    /**
+     * Same as createFromJson(), but does return null instead of throwing an exception on error.
+     *
+     * @param string|null $jsonProperties
+     *
+     * @return static|null
+     */
+    public static function createFromJsonNullOnError(?string $jsonProperties): ?self
+    {
+        try {
+            return static::createFromJson($jsonProperties);
+        } catch (\JsonException $e) {
+            return null;
+        }
     }
 
     /**
