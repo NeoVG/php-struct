@@ -69,7 +69,7 @@ class ParentStructTest extends TestCase
         ])->clean();
         $struct1->child->setDirty('value1', true);
         $struct2 = $struct1->withDirtyPropertiesOnly();
-        $this->assertEquals('{"child":{"value1":"foo"}}', json_encode($struct2));
+        $this->assertEquals('{"child":{"value1":"foo"}}', (string)$struct2);
     }
 
     /**
@@ -93,7 +93,7 @@ class ParentStructTest extends TestCase
         $this->assertIsArray($array['childs'][0]);
         $this->assertEquals('foo', $array['childs'][0]['value1']);
 
-        $json = json_encode($struct);
+        $json = (string)$struct;
         $this->assertEquals('{"childs":[{"value1":"foo"},{"value1":"bar"}]}', $json);
     }
 }

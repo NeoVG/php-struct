@@ -141,7 +141,7 @@ class SimpleTestStructTest extends TestCase
             'foo' => 'foo',
             'bar' => 'bar',
         ]);
-        $this->assertEquals('{"default":"default value"}', json_encode($instance));
+        $this->assertEquals('{"default":"default value"}', (string)$instance);
     }
 
     public function testSlashEscaping()
