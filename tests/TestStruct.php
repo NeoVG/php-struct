@@ -11,23 +11,23 @@ use NeoVg\Struct\StructAbstract;
  *
  * A simple example Struct used to test all available data types for properties.
  *
- * @method static bool(bool $value)
- * @method static int(int $value)
- * @method static float(float $value)
- * @method static string(string $value)
- * @method static array(array $value)
- * @method static stdClass(\stdClass $value)
- * @method static callable(callable $value)
- * @method static default(string $value)
+ * @property bool      $bool
+ * @property int       $int
+ * @property double    $double
+ * @property string    $string
+ * @property array     $array
+ * @property \stdClass $stdClass
+ * @property callable  $callable
+ * @property string    $default
  *
- * @property-read bool      $bool
- * @property-read int       $int
- * @property-read double    $double
- * @property-read string    $string
- * @property-read array     $array
- * @property-read \stdClass $stdClass
- * @property-read callable  $callable
- * @property-read string    $default
+ * @method self bool(bool $value)
+ * @method self int(int $value)
+ * @method self float(float $value)
+ * @method self string(string $value)
+ * @method self array(array $value)
+ * @method self stdClass(\stdClass $value)
+ * @method self callable(callable $value)
+ * @method self default(string $value)
  */
 class TestStruct extends StructAbstract
 {
