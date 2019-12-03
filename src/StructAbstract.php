@@ -285,7 +285,16 @@ abstract class StructAbstract implements JsonSerializable
      */
     public final function __call(string $name, array $args): StructAbstract
     {
-        if (!($property = $this->_getProperty($name))) {
+        $normalizedName = $name;
+        if (preg_match('/^with[A-Z]/', $name)) {
+            $normalizedName = sprintf(
+                '%s%s',
+                strtolower(substr($name, 4, 1)),
+                substr($name, 5)
+            );
+        }
+
+        if (!($property = $this->_getProperty($normalizedName))) {
             throw new \BadMethodCallException(sprintf('Call to undefined method %s::%s()', static::class, $name));
         }
         if (!array_key_exists(0, $args)) {
