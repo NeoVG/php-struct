@@ -278,7 +278,7 @@ abstract class StructAbstract implements JsonSerializable
      * @param string $name Name of the property to be set.
      * @param array  $args Will always only have one element containing the value to be put into the property.
      *
-     * @return $this
+     * @return static
      * @throws \BadMethodCallException Thrown if non existent property was accessed.
      * @throws \ArgumentCountError Thrown if value to set is not passed.
      * @throws \TypeError Thrown if invalid type was put into property.
@@ -406,7 +406,7 @@ abstract class StructAbstract implements JsonSerializable
      * @param string $name
      * @param bool   $isDirty
      *
-     * @return $this
+     * @return static
      */
     public function setDirty(string $name, bool $isDirty): self
     {
