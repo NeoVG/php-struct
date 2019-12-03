@@ -5,11 +5,11 @@ A "C struct"-like class with type safe attributes and fluent setter interface.
 
 ~~~~php
 /**
- * @method $this foo(int $value)
- * @method $this bar(string $value)
- *
  * @property int    $foo
  * @property string $bar
+ *
+ * @method $this withFoo(int $value)
+ * @method $this withBar(string $value)
  */
 class DataStruct extends StructAbstract
 {
@@ -23,18 +23,18 @@ $data = DataStruct::createFromArray([
     'foo' => 1,
     'bar' => 'something',
 ]);
- 
+
 $data = (new DataStruct())
-    ->foo(1)
-    ->bar('something');
-    
+    ->withFoo(1)
+    ->withBar('something');
+
 $data = new DataStruct();
 $data->foo = 1;
 $data->bar = 'something';
- 
+
 echo $data->foo; // '1'
 echo $data->bar; // 'something'
-echo $data; // '{"foo":1,"bar":"something"}'
+echo (string)$data; // '{"foo":1,"bar":"something"}'
 ~~~~
 
 ## Description
@@ -56,6 +56,7 @@ StructAbstract reads the @property-read annotations and creates an internal repr
 - string
 - array
 - object
+- callable
 
 ## Storing Objects
 
@@ -74,9 +75,9 @@ class WithDefaultStruct extends StructAbstract
 {
     protected $someproperty = 'default value';
 }
- 
+
 $data = new WithDefaultStruct();
- 
+
 echo $data->someproperty; // 'default value'
 ~~~~
 
@@ -84,9 +85,6 @@ echo $data->someproperty; // 'default value'
 
 ~~~~php
 /**
- * @method $this strings(array $value)
- * @method $this childs(array $values)
- *
  * @property string[] $strings
  * @property ChildStruct[] $childs
  */
