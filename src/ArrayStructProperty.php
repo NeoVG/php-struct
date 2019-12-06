@@ -64,7 +64,7 @@ class ArrayStructProperty extends StructProperty
         }
 
         foreach (array_keys($values) as $key) {
-            if (!$this->_isValidType($values[$key])) {
+            if (!$this->_isOfValidType($values[$key])) {
                 throw new \TypeError(sprintf('Key %s in argument 1 passed to %s::%s() must be of type %s, %s given',
                     $key,
                     static::class,
@@ -82,7 +82,7 @@ class ArrayStructProperty extends StructProperty
      */
     public function checkValue($key, $value): void
     {
-        if (!$this->_isValidType($value)) {
+        if (!$this->_isOfValidType($value)) {
             throw new \TypeError(sprintf('Key %s in argument 1 passed to %s::%s() must be of type %s, %s given',
                 $key,
                 static::class,

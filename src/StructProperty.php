@@ -116,7 +116,7 @@ class StructProperty
      */
     public function setValue($value): self
     {
-        if (!$this->_isValidType($value)) {
+        if (!$this->_isOfValidType($value)) {
             throw new \TypeError(sprintf('Argument 1 passed to %s::%s() must be of type %s, %s given',
                 static::class,
                 $this->_name,
@@ -228,7 +228,7 @@ class StructProperty
      *
      * @return bool
      */
-    protected function _isValidType($variable): bool
+    protected function _isOfValidType($variable): bool
     {
         if ($variable === null) {
             return true;
