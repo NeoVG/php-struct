@@ -82,7 +82,17 @@ class StructProperty
     {
         $this->_parent = $parent;
         $this->_name = $name;
+
+        if (!($this->_type = $this->_normalizeType($type))) {
+            throw new UnknownTypeError(sprintf('Cannot parse data definition for %s::%s, %s is no valid internal datatype and no known class name.',
+                get_class($this->_parent),
+                $name,
+                $type
+            ));
+        }
+
         $this->_type = $this->_normalizeType($type);
+
         if ($defaultValue !== null) {
             $this->_defaultValue = $defaultValue;
             $this->setValue($defaultValue);
@@ -251,20 +261,45 @@ class StructProperty
      *
      * @param string $type
      *
-     * @return string
+     * @return string|null
      */
-    protected function _normalizeType(string $type): string
+    protected function _normalizeType(string $type): ?string
     {
+        # Normalize alternative spellings for internal types
         switch ($type) {
             case 'bool':
-                return 'boolean';
+                $type = 'boolean';
+                break;
             case 'int':
-                return 'integer';
+                $type = 'integer';
+                break;
             case 'float':
-                return 'double';
-            default:
-                return $type;
+                $type = 'double';
+                break;
         }
+
+        # If type is internal, immediately return
+        if (in_array($type, static::INTERNAL_TYPES)) {
+            return $type;
+        }
+
+        # If type is a class including full namespace, check if it exists and if yes, immediately return
+        if (class_exists($type)) {
+            return $type;
+        }
+
+        # Check if type is a class with relative namespace, check if it exists and if yes, immediately return
+        $type = sprintf(
+            '\%s\%s',
+            preg_replace('/\\\?[^\\\]+$/', '', get_class($this->_parent)),
+            $type
+        );
+        if (class_exists($type)) {
+            return $type;
+        }
+
+        # Unknown type, return null
+        return null;
     }
 
     /**
