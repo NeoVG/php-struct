@@ -31,6 +31,16 @@ class StructProperty
     protected $_type;
 
     /**
+     * @var bool
+     */
+    protected $_containsObject;
+
+    /**
+     * @var bool
+     */
+    protected $_containsStruct;
+
+    /**
      * @var mixed
      */
     protected $_value;
@@ -64,6 +74,9 @@ class StructProperty
         if ($defaultValue !== null) {
             $this->setValue($defaultValue);
         }
+
+        $this->_containsObject = !in_array($this->_type, static::INTERNAL_TYPES);
+        $this->_containsStruct = $this->_containsObject && is_subclass_of($this->_type, StructAbstract::class);
     }
 
     /**
@@ -93,7 +106,7 @@ class StructProperty
      */
     public function containsObject(): bool
     {
-        return !in_array($this->_type, static::INTERNAL_TYPES);
+        return $this->_containsObject;
     }
 
     /**
@@ -103,7 +116,7 @@ class StructProperty
      */
     public function containsStruct(): bool
     {
-        return $this->containsObject() && is_subclass_of($this->_type, StructAbstract::class);
+        return $this->_containsStruct;
     }
 
     /**
