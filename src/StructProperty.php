@@ -21,6 +21,11 @@ class StructProperty
     ];
 
     /**
+     * @var StructAbstract
+     */
+    protected $_parent;
+
+    /**
      * @var string
      */
     protected $_name;
@@ -63,12 +68,14 @@ class StructProperty
     /**
      * StructProperty constructor.
      *
-     * @param string $name
-     * @param string $type
-     * @param null   $defaultValue
+     * @param StructAbstract $parent
+     * @param string         $name
+     * @param string         $type
+     * @param mixed          $defaultValue
      */
-    public function __construct(string $name, string $type, $defaultValue = null)
+    public function __construct(?StructAbstract $parent, string $name, string $type, $defaultValue)
     {
+        $this->_parent = $parent;
         $this->_name = $name;
         $this->_type = $this->_normalizeType($type);
         if ($defaultValue !== null) {

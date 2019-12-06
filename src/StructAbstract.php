@@ -77,12 +77,14 @@ abstract class StructAbstract implements JsonSerializable
                 # Might throw a TypeError if the default $value has the wrong type
                 if ($isArray) {
                     $properties[] = new ArrayStructProperty(
+                        $this,
                         $name,
                         $type,
                         $value
                     );
                 } else {
                     $properties[] = new StructProperty(
+                        $this,
                         $name,
                         $type,
                         $value
