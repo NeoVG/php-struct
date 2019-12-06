@@ -10,8 +10,8 @@ use NeoVg\Struct\StructAbstract;
  * @property string $property1
  * @property string $property2
  *
- * @method self property1(string $value)
- * @method self withProperty2(string $value)
+ * @method $this property1(string $value)
+ * @method $this withProperty2(string $value)
  */
 class FluentSettersStruct extends StructAbstract
 {

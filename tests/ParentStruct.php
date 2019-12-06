@@ -11,9 +11,9 @@ use NeoVg\Struct\StructAbstract;
  * @property \NeoVg\Struct\Test\ChildStruct   $child
  * @property \NeoVg\Struct\Test\ChildStruct[] $childs
  *
- * @method self strings(array $values)
- * @method self child(\NeoVg\Struct\Test\ChildStruct $value)
- * @method self childs(\NeoVg\Struct\Test\ChildStruct[] $values);
+ * @method $this strings(array $values)
+ * @method $this child(\NeoVg\Struct\Test\ChildStruct $value)
+ * @method $this childs(\NeoVg\Struct\Test\ChildStruct[] $values);
  */
 class ParentStruct extends StructAbstract
 {

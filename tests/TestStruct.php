@@ -20,14 +20,14 @@ use NeoVg\Struct\StructAbstract;
  * @property callable  $callable
  * @property string    $default
  *
- * @method self bool(bool $value)
- * @method self int(int $value)
- * @method self float(float $value)
- * @method self string(string $value)
- * @method self array(array $value)
- * @method self stdClass(\stdClass $value)
- * @method self callable(callable $value)
- * @method self default(string $value)
+ * @method $this bool(bool $value)
+ * @method $this int(int $value)
+ * @method $this float(float $value)
+ * @method $this string(string $value)
+ * @method $this array(array $value)
+ * @method $this stdClass(\stdClass $value)
+ * @method $this callable(callable $value)
+ * @method $this default(string $value)
  */
 class TestStruct extends StructAbstract
 {

@@ -9,7 +9,7 @@ namespace NeoVg\Struct\Test;
  *
  * @property string $extended
  *
- * @method self extended(string $value)
+ * @method $this extended(string $value)
  */
 class ExtendedStruct extends SuperStruct
 {
