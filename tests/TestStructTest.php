@@ -12,17 +12,18 @@ use PHPUnit\Framework\TestCase;
  *
  * A simple example Struct used to test all available data types for properties.
  *
- * @property bool      $bool
- * @property boolean   $boolean
- * @property int       $int
- * @property integer   $integer
- * @property float     $float
- * @property double    $double
- * @property string    $string
- * @property array     $array
- * @property \stdClass $stdClass
- * @property callable  $callable
- * @property string    $default
+ * @property bool               $bool
+ * @property boolean            $boolean
+ * @property int                $int
+ * @property integer            $integer
+ * @property float              $float
+ * @property double             $double
+ * @property string             $string
+ * @property array              $array
+ * @property \stdClass          $stdClass
+ * @property \DateTimeInterface $interface
+ * @property callable           $callable
+ * @property string             $default
  *
  * @method $this bool(bool $value)
  * @method $this boolean(boolean $value)
@@ -33,6 +34,7 @@ use PHPUnit\Framework\TestCase;
  * @method $this string(string $value)
  * @method $this array(array $value)
  * @method $this stdClass(\stdClass $value)
+ * @method $this interface(\DateTimeInterface $value)
  * @method $this callable(callable $value)
  * @method $this default(string $value)
  */
@@ -76,9 +78,10 @@ class TestStructTest extends TestCase
             ->double(13.37)
             ->string('')
             ->array([])
+            ->stdClass(new \stdClass())
+            ->interface(new \DateTime())
             ->callable(function () {
-            })
-            ->stdClass(new \stdClass());
+            });
     }
 
     /**
@@ -154,6 +157,16 @@ class TestStructTest extends TestCase
         $this->assertInstanceOf(TestStruct::class, $this->_instance->stdClass(new \stdClass));
         $this->assertIsObject($this->_instance->stdClass);
         $this->assertInstanceOf(\stdClass::class, $this->_instance->stdClass);
+    }
+
+    /**
+     * @throws \Exception
+     */
+    public function testInterface()
+    {
+        $this->assertInstanceOf(TestStruct::class, $this->_instance->interface(new \DateTime()));
+        $this->assertIsObject($this->_instance->interface);
+        $this->assertInstanceOf(\DateTimeInterface::class, $this->_instance->interface);
     }
 
     /**

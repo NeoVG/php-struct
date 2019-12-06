@@ -284,7 +284,7 @@ class StructProperty
         }
 
         # If type is a class including full namespace, check if it exists and if yes, immediately return
-        if (class_exists($type)) {
+        if (class_exists($type) || interface_exists($type)) {
             return $type;
         }
 
@@ -294,7 +294,7 @@ class StructProperty
             preg_replace('/\\\?[^\\\]+$/', '', get_class($this->_parent)),
             $type
         );
-        if (class_exists($type)) {
+        if (class_exists($type) || interface_exists($type)) {
             return $type;
         }
 
