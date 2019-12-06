@@ -56,6 +56,11 @@ class StructProperty
     protected $_originalValue = null;
 
     /**
+     * @var null
+     */
+    protected $_defaultValue;
+
+    /**
      * @var bool
      */
     protected $_isSet = false;
@@ -79,6 +84,7 @@ class StructProperty
         $this->_name = $name;
         $this->_type = $this->_normalizeType($type);
         if ($defaultValue !== null) {
+            $this->_defaultValue = $defaultValue;
             $this->setValue($defaultValue);
         }
 
@@ -124,6 +130,26 @@ class StructProperty
     public function containsStruct(): bool
     {
         return $this->_containsStruct;
+    }
+
+    /**
+     * Returns true if this property has a default value.
+     *
+     * @return bool
+     */
+    public function hasDefaultValue(): bool
+    {
+        return isset($this->_defaultValue);
+    }
+
+    /**
+     * Returns the default value of this property if available.
+     *
+     * @return mixed
+     */
+    public function getDefaultValue()
+    {
+        return $this->_defaultValue;
     }
 
     /**
