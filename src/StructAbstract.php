@@ -613,7 +613,7 @@ abstract class StructAbstract implements JsonSerializable
      *
      * @return array
      */
-    public function debugInfo()
+    public function debugInfo(): array
     {
         $properties = [];
         $propertyMetaDatas = [];

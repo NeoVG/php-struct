@@ -276,4 +276,12 @@ class StructProperty
 
         return $properties;
     }
+
+    /**
+     * @return array
+     */
+    public function debugInfo(): array
+    {
+        return $this->__debugInfo();
+    }
 }
