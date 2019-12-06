@@ -337,6 +337,37 @@ abstract class StructAbstract implements JsonSerializable
     }
 
     /**
+     * Returns whether this struct has a property with a certain name.
+     *
+     * @param string $name
+     *
+     * @return bool
+     */
+    public function hasProperty(string $name): bool
+    {
+        return $this->_getProperty($name) !== null;
+    }
+
+    /**
+     * Returns the property object for a certain name.
+     *
+     * @param string $name
+     *
+     * @return StructProperty
+     */
+    public function getProperty(string $name): StructProperty
+    {
+        if (!$this->hasProperty($name)) {
+            throw new InvalidPropertyException(sprintf('Property %s::%s does not exist',
+                static::class,
+                $name
+            ));
+        }
+
+        return $this->_getProperty($name);
+    }
+
+    /**
      * Returns an array of all property objects.
      *
      * @return StructProperty[]
@@ -347,8 +378,10 @@ abstract class StructAbstract implements JsonSerializable
             $class = get_class($property);
 
             return new $class(
+                null,
                 $property->getName(),
-                $property->getType()
+                $property->getType(),
+                $property->getDefaultValue()
             );
         }, $this->_properties);
     }
