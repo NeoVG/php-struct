@@ -623,8 +623,12 @@ abstract class StructAbstract implements JsonSerializable
         foreach ($this->_properties as $property) {
             if ($property instanceof ArrayStructProperty && $property->isSet()) {
                 $properties[$property->getName()] = array_map(
-                    function (StructAbstract $subValue) {
-                        return $subValue->debugInfo();
+                    function ($subValue) {
+                        if (is_object($subValue) && $subValue instanceof StructAbstract) {
+                            return $subValue->debugInfo();
+                        }
+
+                        return $subValue;
                     },
                     $property->getValue()
                 );
