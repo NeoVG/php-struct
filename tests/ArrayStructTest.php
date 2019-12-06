@@ -45,7 +45,7 @@ class ArrayStructTest extends TestCase
                 [
                     'value1' => 'foo',
                 ],
-                ChildStruct::createFromArray([
+                Child\ChildStruct::createFromArray([
                     'value1' => 'bar',
                 ]),
             ],
@@ -78,15 +78,15 @@ class ArrayStructTest extends TestCase
         $this->assertEquals([], $struct->childs);
 
         $struct->childs = [
-            ChildStruct::createFromArray(['value1' => 'foo']),
+            Child\ChildStruct::createFromArray(['value1' => 'foo']),
         ];
-        $this->assertInstanceOf(ChildStruct::class, $struct->childs[0]);
+        $this->assertInstanceOf(Child\ChildStruct::class, $struct->childs[0]);
         $this->assertEquals('foo', $struct->childs[0]->value1);
 
         $struct->childs = [
-            (new ChildStruct())->value1('bar'),
+            (new Child\ChildStruct())->value1('bar'),
         ];
-        $this->assertInstanceOf(ChildStruct::class, $struct->childs[0]);
+        $this->assertInstanceOf(Child\ChildStruct::class, $struct->childs[0]);
         $this->assertEquals('bar', $struct->childs[0]->value1);
     }
 }

@@ -8,6 +8,9 @@ use NeoVg\Struct\StructAbstract;
 use NeoVg\Struct\StructProperty;
 use PHPUnit\Framework\TestCase;
 
+/**
+ * Class StructAbstractTest
+ */
 class StructAbstractTest extends TestCase
 {
     /**
@@ -15,11 +18,17 @@ class StructAbstractTest extends TestCase
      */
     private $_stub;
 
+    /**
+     * @throws \ReflectionException
+     */
     public function setUp()
     {
         $this->_stub = $this->getMockForAbstractClass(StructAbstract::class);
     }
 
+    /**
+     * @throws \ReflectionException
+     */
     private function _mockContent()
     {
         $reflectionClass = new \ReflectionClass(StructAbstract::class);
@@ -27,15 +36,21 @@ class StructAbstractTest extends TestCase
         $reflectionProperties->setAccessible(true);
 
         $reflectionProperties->setValue($this->_stub, [
-            new StructProperty('test', 'bool'),
+            new StructProperty(null, 'test', 'bool', null),
         ]);
     }
 
+    /**
+     *
+     */
     public function testNew()
     {
         $this->assertInstanceOf(StructAbstract::class, $this->_stub);
     }
 
+    /**
+     * @throws \ReflectionException
+     */
     public function test__call()
     {
         $this->_mockContent();
@@ -48,6 +63,9 @@ class StructAbstractTest extends TestCase
         $this->_stub->doesNotExist();
     }
 
+    /**
+     * @throws \ReflectionException
+     */
     public function test__get()
     {
         $this->_mockContent();
@@ -55,16 +73,25 @@ class StructAbstractTest extends TestCase
         $this->assertNull($this->_stub->test);
     }
 
+    /**
+     *
+     */
     public function testToArray()
     {
         $this->assertEquals([], $this->_stub->toArray());
     }
 
+    /**
+     *
+     */
     public function test_jsonSerialize()
     {
         $this->assertInstanceOf(\stdClass::class, $this->_stub->jsonSerialize());
     }
 
+    /**
+     *
+     */
     public function test__toString()
     {
         $this->assertJson((string)$this->_stub);

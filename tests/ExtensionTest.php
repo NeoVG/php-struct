@@ -4,7 +4,28 @@ declare(strict_types=1);
 
 namespace NeoVg\Struct\Test;
 
+use NeoVg\Struct\StructAbstract;
 use PHPUnit\Framework\TestCase;
+
+/**
+ * Class SuperStruct
+ *
+ * @property string $super
+ */
+class SuperStruct extends StructAbstract
+{
+}
+
+/**
+ * Class ExtendedStruct
+ *
+ * @property string $extended
+ *
+ * @method $this extended(string $value)
+ */
+class ExtendedStruct extends SuperStruct
+{
+}
 
 /**
  * Class ExtensionTest

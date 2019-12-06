@@ -9,6 +9,22 @@ use NeoVg\Struct\StructProperty;
 use PHPUnit\Framework\TestCase;
 
 /**
+ * Class NewTestStruct
+ *
+ * @property bool      $bool
+ * @property int       $int
+ * @property float     $float
+ * @property string    $string
+ * @property array     $array
+ * @property \stdClass $stdClass
+ * @property string    $default
+ */
+class SimpleTestStruct extends StructAbstract
+{
+    protected $default = 'default value';
+}
+
+/**
  * Class TestStructTest
  */
 class SimpleTestStructTest extends TestCase
@@ -103,6 +119,12 @@ class SimpleTestStructTest extends TestCase
     public function testDefault()
     {
         $instance = new SimpleTestStruct();
+
+        $this->assertFalse($instance->getProperty('string')->hasDefaultValue());
+        $this->assertNull($instance->getProperty('string')->getDefaultValue());
+
+        $this->assertTrue($instance->getProperty('default')->hasDefaultValue());
+        $this->assertEquals('default value', $instance->getProperty('default')->getDefaultValue());
 
         $this->assertIsString($instance->default);
         $this->assertEquals('default value', $instance->default);
