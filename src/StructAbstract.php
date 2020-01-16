@@ -66,12 +66,28 @@ abstract class StructAbstract implements JsonSerializable
                 $isArray = $match[3];
                 $value = property_exists(static::class, $name) ? $this->$name : null;
 
-                if (array_filter($properties, function (StructProperty $property) use ($name) {
-                    return $property->getName() === $name;
-                })) {
-                    trigger_error(sprintf('Cannot redefine property $%s', $name), E_USER_NOTICE);
+                if ($existingProperty = array_filter($properties, function (StructProperty $property) use ($name) {
+                        return $property->getName() === $name;
+                    })[0] ?? null) {
+                    /** @var StructProperty $existingProperty */
 
-                    continue;
+                    if (
+                        !class_exists($type)
+                        || !class_exists($existingProperty->getType())
+                        || !is_subclass_of($type, $existingProperty->getType())
+                    ) {
+                        trigger_error(sprintf('Cannot redefine property $%s', $name), E_USER_NOTICE);
+
+                        continue;
+                    }
+
+                    for ($i = 0; $i < count($properties); $i++) {
+                        if ($properties[$i] === $existingProperty) {
+                            array_splice($properties, $i, 1);
+
+                            break;
+                        }
+                    }
                 }
 
                 # Might throw a TypeError if the default $value has the wrong type
