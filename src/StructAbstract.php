@@ -66,9 +66,9 @@ abstract class StructAbstract implements JsonSerializable
                 $isArray = $match[3];
                 $value = property_exists(static::class, $name) ? $this->$name : null;
 
-                if ($existingProperty = array_filter($properties, function (StructProperty $property) use ($name) {
+                if ($existingProperty = array_values(array_filter($properties, function (StructProperty $property) use ($name) {
                         return $property->getName() === $name;
-                    })[0] ?? null) {
+                    }))[0] ?? null) {
                     /** @var StructProperty $existingProperty */
 
                     if (
