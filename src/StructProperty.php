@@ -26,6 +26,11 @@ class StructProperty
     protected $_parent;
 
     /**
+     * @var
+     */
+    protected $_class;
+
+    /**
      * @var string
      */
     protected $_name;
@@ -74,13 +79,15 @@ class StructProperty
      * StructProperty constructor.
      *
      * @param StructAbstract $parent
+     * @param string         $class
      * @param string         $name
      * @param string         $type
      * @param mixed          $defaultValue
      */
-    public function __construct(?StructAbstract $parent, string $name, string $type, $defaultValue)
+    public function __construct(?StructAbstract $parent, string $class, string $name, string $type, $defaultValue)
     {
         $this->_parent = $parent;
+        $this->_class = $class;
         $this->_name = $name;
 
         if (!($this->_type = $this->_normalizeType($type))) {
@@ -100,6 +107,17 @@ class StructProperty
 
         $this->_containsObject = !in_array($this->_type, static::INTERNAL_TYPES);
         $this->_containsStruct = $this->_containsObject && is_subclass_of($this->_type, StructAbstract::class);
+    }
+
+    /**
+     * Returns the name of the class where this property was defined.
+     * This is especially handy when extending struct classes.
+     *
+     * @return string
+     */
+    public function getClass(): string
+    {
+        return $this->_class;
     }
 
     /**

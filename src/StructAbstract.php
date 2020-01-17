@@ -51,24 +51,35 @@ abstract class StructAbstract implements JsonSerializable
     {
         try {
             $class = static::class;
-            $docCommentString = (new \ReflectionClass($class))->getDocComment() . '';
+            $docCommentString = (new \ReflectionClass($class))->getDocComment();
+            $docCommentString = preg_replace('/^(.*)$/m', $class . ' \\1', $docCommentString);
+
             while ($class !== self::class) {
                 $class = get_parent_class($class);
-                $docCommentString = (new \ReflectionClass($class))->getDocComment() . PHP_EOL . $docCommentString;
+                $tmpDocCommentString = (new \ReflectionClass($class))->getDocComment();
+                $tmpDocCommentString = preg_replace('/^(.*)$/m', $class . ' \\1', $tmpDocCommentString);
+                $docCommentString = $tmpDocCommentString . PHP_EOL . $docCommentString;
             }
 
-            preg_match_all('/@property(-read)? +([\w\\\]+)(\[\])? +\$(\w+)/', $docCommentString, $matches, PREG_SET_ORDER);
+            preg_match_all('/(.+?)\s+\*\s+@property(-read)? +([\w\\\]+)(\[\])? +\$(\w+)/', $docCommentString, $matches, PREG_SET_ORDER);
 
             $properties = [];
             foreach ($matches as $match) {
-                $name = $match[4];
-                $type = $match[2];
-                $isArray = $match[3];
+                $class = $match[1];
+                $name = $match[5];
+                $type = $match[3];
+                $isArray = $match[4];
                 $value = property_exists(static::class, $name) ? $this->$name : null;
 
-                if ($existingProperty = array_values(array_filter($properties, function (StructProperty $property) use ($name) {
-                        return $property->getName() === $name;
-                    }))[0] ?? null) {
+                if ($existingProperty = array_values(
+                        array_filter(
+                            $properties,
+                            function (StructProperty $property) use ($name) {
+                                return $property->getName() === $name;
+                            }
+                        )
+                    )[0] ?? null
+                ) {
                     /** @var StructProperty $existingProperty */
 
                     if (
@@ -76,7 +87,17 @@ abstract class StructAbstract implements JsonSerializable
                         || !class_exists($existingProperty->getType())
                         || !is_subclass_of($type, $existingProperty->getType())
                     ) {
-                        trigger_error(sprintf('Cannot redefine property $%s', $name), E_USER_NOTICE);
+                        trigger_error(
+                            sprintf(
+                                'Cannot redefine property %s $%s in class %s, was already defined as %s in class %s',
+                                $type,
+                                $name,
+                                $class,
+                                $existingProperty->getType(),
+                                $existingProperty->getClass()
+                            ),
+                            E_USER_NOTICE
+                        );
 
                         continue;
                     }
@@ -94,6 +115,7 @@ abstract class StructAbstract implements JsonSerializable
                 if ($isArray) {
                     $properties[] = new ArrayStructProperty(
                         $this,
+                        $class,
                         $name,
                         $type,
                         $value
@@ -101,6 +123,7 @@ abstract class StructAbstract implements JsonSerializable
                 } else {
                     $properties[] = new StructProperty(
                         $this,
+                        $class,
                         $name,
                         $type,
                         $value
@@ -397,6 +420,7 @@ abstract class StructAbstract implements JsonSerializable
 
             return new $class(
                 null,
+                $property->getClass(),
                 $property->getName(),
                 $property->getType(),
                 $property->getDefaultValue()
@@ -590,7 +614,7 @@ abstract class StructAbstract implements JsonSerializable
      */
     public function __toString(): string
     {
-        return json_encode($this, JSON_UNESCAPED_SLASHES | JSON_PRESERVE_ZERO_FRACTION);
+        return json_encode($this, JSON_UNESCAPED_SLASHES | JSON_PRESERVE_ZERO_FRACTION | JSON_PRETTY_PRINT);
     }
 
     /**
