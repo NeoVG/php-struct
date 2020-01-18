@@ -36,7 +36,7 @@ class StructAbstractTest extends TestCase
         $reflectionProperties->setAccessible(true);
 
         $reflectionProperties->setValue($this->_stub, [
-            new StructProperty(null, 'null', 'test', 'bool', null),
+            'test' => new StructProperty(null, 'null', 'test', 'bool', null),
         ]);
     }
 

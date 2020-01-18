@@ -55,26 +55,26 @@ class SimpleTestStructTest extends TestCase
 
         # Test property names
         $this->assertEquals([
-            'bool',
-            'int',
-            'float',
-            'string',
-            'array',
-            'stdClass',
-            'default',
+            'bool'     => 'bool',
+            'int'      => 'int',
+            'float'    => 'float',
+            'string'   => 'string',
+            'array'    => 'array',
+            'stdClass' => 'stdClass',
+            'default'  => 'default',
         ], array_map(function (StructProperty $property) {
             return $property->getName();
         }, $properties));
 
         # Test property types
         $this->assertEquals([
-            'boolean',
-            'integer',
-            'double',
-            'string',
-            'array',
-            '\stdClass',
-            'string',
+            'string'   => 'string',
+            'array'    => 'array',
+            'default'  => 'string',
+            'bool'     => 'boolean',
+            'int'      => 'integer',
+            'float'    => 'double',
+            'stdClass' => '\stdClass',
         ], array_map(function (StructProperty $property) {
             return $property->getType();
         }, $properties));
@@ -163,13 +163,25 @@ class SimpleTestStructTest extends TestCase
             'foo' => 'foo',
             'bar' => 'bar',
         ]);
-        $this->assertEquals('{"default":"default value"}', (string)$instance);
+        $this->assertEquals(<<<'EOD'
+{
+    "default": "default value"
+}
+EOD
+            , (string)$instance);
     }
 
     public function testSlashEscaping()
     {
-        $instance = (new SimpleTestStruct())
-            ->string('/');
-        $this->assertEquals('{"string":"/","default":"default value"}', (string)$instance);
+        $instance = SimpleTestStruct::createFromArray([
+            'string' => '/',
+        ]);
+        $this->assertEquals(<<<'EOD'
+{
+    "string": "/",
+    "default": "default value"
+}
+EOD
+            , (string)$instance);
     }
 }

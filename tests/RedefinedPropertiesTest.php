@@ -46,5 +46,9 @@ class RedefinedPropertiesTest extends TestCase
     public function testRedefineProperties()
     {
         $instance = new RedefinePropertyStruct();
+        $this->assertEquals(
+            'NeoVg\Struct\Test\RedefinePropertyStruct',
+            $instance->getProperty('foo')->getClass()
+        );
     }
 }

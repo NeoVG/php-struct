@@ -16,6 +16,11 @@ use JsonSerializable;
 abstract class StructAbstract implements JsonSerializable
 {
     /**
+     * @var array[]
+     */
+    protected static $_propertiesTemplate = [];
+
+    /**
      * @var StructAbstract
      */
     protected $_parent;
@@ -49,91 +54,92 @@ abstract class StructAbstract implements JsonSerializable
      */
     protected function _buildProperties(): void
     {
-        try {
-            $class = static::class;
-            $docCommentString = (new \ReflectionClass($class))->getDocComment();
-            $docCommentString = preg_replace('/^(.*)$/m', $class . ' \\1', $docCommentString);
+        if (!($properties = static::$_propertiesTemplate[static::class] ?? null)) {
+            try {
+                $docCommentString = (new \ReflectionClass(static::class))->getDocComment();
+                $docCommentString = preg_replace('/^(.*)$/m', static::class . ' \\1', $docCommentString);
 
-            while ($class !== self::class) {
-                $class = get_parent_class($class);
-                $tmpDocCommentString = (new \ReflectionClass($class))->getDocComment();
-                $tmpDocCommentString = preg_replace('/^(.*)$/m', $class . ' \\1', $tmpDocCommentString);
-                $docCommentString = $tmpDocCommentString . PHP_EOL . $docCommentString;
-            }
+                while (($tmpClass ?? static::class) !== self::class) {
+                    $tmpClass = get_parent_class($tmpClass ?? static::class);
+                    $tmpDocCommentString = (new \ReflectionClass($tmpClass))->getDocComment();
+                    $tmpDocCommentString = preg_replace('/^(.*)$/m', $tmpClass . ' \\1', $tmpDocCommentString);
+                    $docCommentString = $tmpDocCommentString . PHP_EOL . $docCommentString;
+                }
 
-            preg_match_all('/(.+?)\s+\*\s+@property(-read)? +([\w\\\]+)(\[\])? +\$(\w+)/', $docCommentString, $matches, PREG_SET_ORDER);
+                preg_match_all('/(.+?)\s+\*\s+@property(-read)? +([\w\\\]+)(\[\])? +\$(\w+)/', $docCommentString, $matches, PREG_SET_ORDER);
 
-            $properties = [];
-            foreach ($matches as $match) {
-                $class = $match[1];
-                $name = $match[5];
-                $type = $match[3];
-                $isArray = $match[4];
-                $value = property_exists(static::class, $name) ? $this->$name : null;
+                $properties = [];
+                foreach ($matches as $match) {
+                    $source = $match[1];
+                    $name = $match[5];
+                    $type = $match[3];
+                    $isArray = $match[4];
+                    $value = property_exists(static::class, $name) ? $this->$name : null;
 
-                if ($existingProperty = array_values(
-                        array_filter(
-                            $properties,
-                            function (StructProperty $property) use ($name) {
-                                return $property->getName() === $name;
-                            }
-                        )
-                    )[0] ?? null
-                ) {
-                    /** @var StructProperty $existingProperty */
-
-                    if (
-                        !class_exists($type)
-                        || !class_exists($existingProperty->getType())
-                        || !is_subclass_of($type, $existingProperty->getType())
+                    if ($existingProperty = array_values(
+                            array_filter(
+                                $properties,
+                                function (StructProperty $property) use ($name) {
+                                    return $property->getName() === $name;
+                                }
+                            )
+                        )[0] ?? null
                     ) {
-                        trigger_error(
-                            sprintf(
-                                'Cannot redefine property %s $%s in class %s, was already defined as %s in class %s',
-                                $type,
-                                $name,
-                                $class,
-                                $existingProperty->getType(),
-                                $existingProperty->getClass()
-                            ),
-                            E_USER_NOTICE
-                        );
+                        /** @var StructProperty $existingProperty */
 
-                        continue;
-                    }
+                        if (
+                            !class_exists($type)
+                            || !class_exists($existingProperty->getType())
+                            || !is_subclass_of($type, $existingProperty->getType())
+                        ) {
+                            trigger_error(
+                                sprintf(
+                                    'Cannot redefine property %s $%s in class %s, was already defined as %s in class %s',
+                                    $type,
+                                    $name,
+                                    $source,
+                                    $existingProperty->getType(),
+                                    $existingProperty->getClass()
+                                ),
+                                E_USER_NOTICE
+                            );
 
-                    for ($i = 0; $i < count($properties); $i++) {
-                        if ($properties[$i] === $existingProperty) {
-                            array_splice($properties, $i, 1);
-
-                            break;
+                            continue;
                         }
                     }
+
+                    # Might throw a TypeError if the default $value has the wrong type
+                    if ($isArray) {
+                        $properties[$name] = new ArrayStructProperty(
+                            $this,
+                            $source,
+                            $name,
+                            $type,
+                            $value
+                        );
+                    } else {
+                        $properties[$name] = new StructProperty(
+                            $this,
+                            $source,
+                            $name,
+                            $type,
+                            $value
+                        );
+                    }
                 }
 
-                # Might throw a TypeError if the default $value has the wrong type
-                if ($isArray) {
-                    $properties[] = new ArrayStructProperty(
-                        $this,
-                        $class,
-                        $name,
-                        $type,
-                        $value
-                    );
-                } else {
-                    $properties[] = new StructProperty(
-                        $this,
-                        $class,
-                        $name,
-                        $type,
-                        $value
-                    );
-                }
+                static::$_propertiesTemplate[static::class] = $properties;
+            } catch (\ReflectionException $e) {
+                # Never happens, but in case it happens nevertheless, notify Bugsnag
             }
-            $this->_properties = $properties;
-        } catch (\ReflectionException $e) {
-            # Never happens, but in case it happens nevertheless, notify Bugsnag
         }
+
+        $this->_properties = array_map(
+            function (StructProperty $property) {
+                return clone $property;
+            },
+            $properties
+        );
     }
 
     /**
@@ -367,14 +373,7 @@ abstract class StructAbstract implements JsonSerializable
      */
     protected function _getProperty(string $name): ?StructProperty
     {
-        foreach ($this->_properties as $property) {
-            /** @var StructProperty $property */
-            if ($property->getName() === $name) {
-                return $property;
-            }
-        }
-
-        return null;
+        return $this->_properties[$name] ?? null;
     }
 
     /**
@@ -452,7 +451,7 @@ abstract class StructAbstract implements JsonSerializable
     public function getSet(): array
     {
         return array_values(
-            array_filter($this->_properties, function (StructProperty $property) {
+            array_filter($this->_properties ?? [], function (StructProperty $property) {
                 return $property->isSet();
             })
         );
@@ -468,7 +467,7 @@ abstract class StructAbstract implements JsonSerializable
     public function isDirty(string $name = null): bool
     {
         if ($name === null) {
-            foreach ($this->_properties as $property) {
+            foreach (($this->_properties ?? []) as $property) {
                 if ($property->isDirty()) {
                     return true;
                 }
@@ -513,7 +512,7 @@ abstract class StructAbstract implements JsonSerializable
     public function getDirty(): array
     {
         return array_values(
-            array_filter($this->_properties, function (StructProperty $property) {
+            array_filter($this->_properties ?? [], function (StructProperty $property) {
                 return $property->isDirty();
             })
         );
@@ -630,7 +629,7 @@ abstract class StructAbstract implements JsonSerializable
         $properties = [];
         $propertyMetaDatas = [];
 
-        foreach ($this->_properties as $property) {
+        foreach (($this->_properties ?? []) as $property) {
             /** @var StructProperty $property */
             $properties[$property->getName()] = $property->getValue();
             $propertyMetaDatas[$property->getName()] = $property->__debugInfo();

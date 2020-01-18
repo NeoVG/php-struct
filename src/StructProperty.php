@@ -352,7 +352,9 @@ class StructProperty
         $properties = [];
 
         foreach (get_object_vars($this) as $key => $value) {
-            $properties[$key] = $value;
+            if ($key !== '_parent') {
+                $properties[$key] = $value;
+            }
         }
 
         $properties += [
