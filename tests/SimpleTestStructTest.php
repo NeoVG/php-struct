@@ -18,6 +18,7 @@ use PHPUnit\Framework\TestCase;
  * @property array     $array
  * @property \stdClass $stdClass
  * @property string    $default
+ * @property mixed     $mixed
  */
 class SimpleTestStruct extends StructAbstract
 {
@@ -62,6 +63,7 @@ class SimpleTestStructTest extends TestCase
             'array'    => 'array',
             'stdClass' => 'stdClass',
             'default'  => 'default',
+            'mixed'    => 'mixed',
         ], array_map(function (StructProperty $property) {
             return $property->getName();
         }, $properties));
@@ -75,6 +77,7 @@ class SimpleTestStructTest extends TestCase
             'int'      => 'integer',
             'float'    => 'double',
             'stdClass' => '\stdClass',
+            'mixed'    => 'mixed',
         ], array_map(function (StructProperty $property) {
             return $property->getType();
         }, $properties));
@@ -171,6 +174,9 @@ EOD
             , (string)$instance);
     }
 
+    /**
+     *
+     */
     public function testSlashEscaping()
     {
         $instance = SimpleTestStruct::createFromArray([
@@ -183,5 +189,15 @@ EOD
 }
 EOD
             , (string)$instance);
+    }
+
+    /**
+     *
+     */
+    public function testMixed()
+    {
+        $instance = new SimpleTestStruct();
+        $instance->mixed = true;
+        $this->assertIsBool($instance->mixed);
     }
 }

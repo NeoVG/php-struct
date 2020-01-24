@@ -18,6 +18,7 @@ class StructProperty
         'string',
         'array',
         'callable',
+        'mixed',
     ];
 
     /**
