@@ -358,10 +358,12 @@ class StructProperty
             }
         }
 
-        $properties += [
-            '[containsObject]' => $this->containsObject(),
-            '[containsStruct]' => $this->containsStruct(),
-        ];
+        if (isset($this->_containsObject)) {
+            $properties['[containsObject]'] = $this->_containsObject;
+        }
+        if (isset($this->_containsStruct)) {
+            $properties['[containsStruct'] = $this->_containsStruct;
+        }
 
         return $properties;
     }
