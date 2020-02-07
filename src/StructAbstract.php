@@ -16,11 +16,6 @@ use JsonSerializable;
 abstract class StructAbstract implements JsonSerializable
 {
     /**
-     * @var array[]
-     */
-    protected static $_propertiesTemplate = [];
-
-    /**
      * @var StructAbstract
      */
     protected $_parent;
@@ -46,6 +41,10 @@ abstract class StructAbstract implements JsonSerializable
         $this->_parent = $parent;
         $this->_nameInParent = $nameInParent;
 
+        if (static::class === self::class || preg_match('/^Mock_StructAbstract_/', static::class)) {
+            return;
+        }
+
         $this->_buildProperties();
     }
 
@@ -54,7 +53,7 @@ abstract class StructAbstract implements JsonSerializable
      */
     protected function _buildProperties(): void
     {
-        if (!($properties = static::$_propertiesTemplate[static::class] ?? null)) {
+        if (!($properties = PropertyTemplates::getTemplate(static::class))) {
             try {
                 $docCommentString = (new \ReflectionClass(static::class))->getDocComment();
                 $docCommentString = preg_replace('/^(.*)$/m', static::class . ' \\1', $docCommentString);
@@ -138,7 +137,7 @@ abstract class StructAbstract implements JsonSerializable
                     }
                 }
 
-                static::$_propertiesTemplate[static::class] = $properties;
+                PropertyTemplates::setTemplate(static::class, $properties);
             } catch (\ReflectionException $e) {
                 trigger_error($e->getMessage(), E_USER_ERROR);
             }
