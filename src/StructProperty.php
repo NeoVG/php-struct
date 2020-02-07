@@ -84,6 +84,8 @@ class StructProperty
      * @param string         $name
      * @param string         $type
      * @param mixed          $defaultValue
+     *
+     * @throws \TypeError
      */
     public function __construct(?StructAbstract $parent, string $class, string $name, string $type, $defaultValue)
     {
@@ -92,11 +94,14 @@ class StructProperty
         $this->_name = $name;
 
         if (!($this->_type = $this->_normalizeType($type))) {
-            throw new UnknownTypeError(sprintf('Cannot parse data definition for %s::%s, %s is no valid internal datatype and no known class name.',
-                get_class($this->_parent),
-                $name,
-                $type
-            ));
+            trigger_error(
+                sprintf('Cannot parse data definition for %s::%s, %s is no valid internal datatype and no known class name.',
+                    get_class($this->_parent),
+                    $name,
+                    $type
+                ),
+                E_USER_ERROR
+            );
         }
 
         $this->_type = $this->_normalizeType($type);
@@ -187,17 +192,19 @@ class StructProperty
      * @param mixed $value
      *
      * @return StructProperty
-     * @throws \TypeError Thrown if an invalid type was passed.
+     * @throws \TypeError
      */
     public function setValue($value): self
     {
         if (!$this->_isOfValidType($value)) {
-            throw new \TypeError(sprintf('Argument 1 passed to %s::%s() must be of type %s, %s given',
-                static::class,
-                $this->_name,
-                $this->_type,
-                gettype($value)
-            ));
+            throw new \TypeError(
+                sprintf('Argument 1 passed to %s::%s() must be of type %s, %s given',
+                    static::class,
+                    $this->_name,
+                    $this->_type,
+                    gettype($value)
+                )
+            );
         }
 
         $this->_value = $value;

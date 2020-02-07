@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace NeoVg\Struct\Test;
 
+use PHPUnit\Framework\Error\Error;
 use PHPUnit\Framework\TestCase;
 
 /**
@@ -29,7 +30,7 @@ class ArrayStructTest extends TestCase
      */
     public function testWrongType()
     {
-        $this->expectException(\TypeError::class);
+        $this->expectException(Error::class);
         $struct = ParentStruct::createFromArray([
             'strings' => [true],
         ]);
@@ -59,7 +60,7 @@ class ArrayStructTest extends TestCase
      */
     public function testChildArrayErrors()
     {
-        $this->expectException(\TypeError::class);
+        $this->expectException(Error::class);
         $struct = ParentStruct::createFromArray([
             'childs' => [
                 new ParentStruct(),

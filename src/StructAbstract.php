@@ -93,8 +93,7 @@ abstract class StructAbstract implements JsonSerializable
                             || !is_subclass_of($type, $existingProperty->getType())
                         ) {
                             trigger_error(
-                                sprintf(
-                                    'Cannot redefine property %s $%s in class %s, was already defined as %s in class %s',
+                                sprintf('Cannot redefine property %s $%s in class %s, was already defined as %s in class %s',
                                     $type,
                                     $name,
                                     $source,
@@ -109,28 +108,39 @@ abstract class StructAbstract implements JsonSerializable
                     }
 
                     # Might throw a TypeError if the default $value has the wrong type
-                    if ($isArray) {
-                        $properties[$name] = new ArrayStructProperty(
-                            $this,
-                            $source,
-                            $name,
-                            $type,
-                            $value
-                        );
-                    } else {
-                        $properties[$name] = new StructProperty(
-                            $this,
-                            $source,
-                            $name,
-                            $type,
-                            $value
+                    try {
+                        if ($isArray) {
+                            $properties[$name] = new ArrayStructProperty(
+                                $this,
+                                $source,
+                                $name,
+                                $type,
+                                $value
+                            );
+                        } else {
+                            $properties[$name] = new StructProperty(
+                                $this,
+                                $source,
+                                $name,
+                                $type,
+                                $value
+                            );
+                        }
+                    } catch (\TypeError $e) {
+                        trigger_error(
+                            sprintf('Default value for property %s $%s in class %s is of invalid type %s',
+                                $type,
+                                $name,
+                                $source,
+                                gettype($value)
+                            )
                         );
                     }
                 }
 
                 static::$_propertiesTemplate[static::class] = $properties;
             } catch (\ReflectionException $e) {
-                # Never happens, but in case it happens nevertheless, notify Bugsnag
+                trigger_error($e->getMessage(), E_USER_ERROR);
             }
         }
 
@@ -233,7 +243,11 @@ abstract class StructAbstract implements JsonSerializable
                                         $value[$key] = $class::createFromArray($value[$key], $struct, $name);
                                     }
 
-                                    $property->checkValue($key, $value[$key]);
+                                    try {
+                                        $property->checkValue($key, $value[$key]);
+                                    } catch (\TypeError $e) {
+                                        trigger_error(sprintf('%s in %s', $e->getMessage(), static::_getCaller()), E_USER_ERROR);
+                                    }
                                 }
                             } else {
                                 $value = $class::createFromArray($value, $struct, $name);
@@ -268,7 +282,7 @@ abstract class StructAbstract implements JsonSerializable
     public final function __isset(string $name)
     {
         if (!($property = $this->_getProperty($name))) {
-            trigger_error(sprintf('Undefined property: %s::$%s', static::class, $name), E_USER_NOTICE);
+            trigger_error(sprintf('Undefined property: %s::$%s in %s', static::class, $name, static::_getCaller()), E_USER_ERROR);
 
             return;
         }
@@ -287,7 +301,7 @@ abstract class StructAbstract implements JsonSerializable
     public final function __get(string $name)
     {
         if (!($property = $this->_getProperty($name))) {
-            trigger_error(sprintf('Undefined property: %s::$%s', static::class, $name), E_USER_NOTICE);
+            trigger_error(sprintf('Undefined property: %s::$%s in %s', static::class, $name, static::_getCaller()), E_USER_ERROR);
 
             return null;
         }
@@ -302,18 +316,20 @@ abstract class StructAbstract implements JsonSerializable
      *
      * @param string $name
      * @param        $value
-     *
-     * @throws \TypeError Thrown if invalid type was put into property.
      */
     public final function __set(string $name, $value): void
     {
         if (!($property = $this->_getProperty($name))) {
-            trigger_error(sprintf('Undefined property: %s::$%s', static::class, $name), E_USER_NOTICE);
+            trigger_error(sprintf('Undefined property: %s::$%s in %s', static::class, $name, static::_getCaller()), E_USER_ERROR);
 
             return;
         }
 
-        $property->setValue($value);
+        try {
+            $property->setValue($value);
+        } catch (\TypeError $e) {
+            trigger_error(sprintf('%s in %s', $e->getMessage(), static::_getCaller()));
+        }
 
         $this->_setDirtyStateInParent();
     }
@@ -326,9 +342,6 @@ abstract class StructAbstract implements JsonSerializable
      * @param array  $args Will always only have one element containing the value to be put into the property.
      *
      * @return static
-     * @throws \BadMethodCallException Thrown if non existent property was accessed.
-     * @throws \ArgumentCountError Thrown if value to set is not passed.
-     * @throws \TypeError Thrown if invalid type was put into property.
      */
     public final function __call(string $name, array $args): StructAbstract
     {
@@ -342,12 +355,16 @@ abstract class StructAbstract implements JsonSerializable
         }
 
         if (!($property = $this->_getProperty($normalizedName))) {
-            throw new \BadMethodCallException(sprintf('Call to undefined method %s::%s()', static::class, $name));
+            trigger_error(sprintf('Call to undefined method %s::%s() in %s', static::class, $name, static::_getCaller()), E_USER_ERROR);
         }
         if (!array_key_exists(0, $args)) {
-            throw new \ArgumentCountError(sprintf('%s::%s() expects exactly 1 parameter, 0 given', static::class, $name));
+            trigger_error(sprintf('%s::%s() expects exactly 1 parameter, 0 given in %s', static::class, $name, static::_getCaller()), E_USER_ERROR);
         }
-        $property->setValue($args[0]);
+        try {
+            $property->setValue($args[0]);
+        } catch (\TypeError $e) {
+            trigger_error(sprintf('%s in %s', $e->getMessage(), static::_getCaller()), E_USER_ERROR);
+        }
 
         $this->_setDirtyStateInParent();
 
@@ -398,10 +415,7 @@ abstract class StructAbstract implements JsonSerializable
     public function getProperty(string $name): StructProperty
     {
         if (!$this->hasProperty($name)) {
-            throw new InvalidPropertyException(sprintf('Property %s::%s does not exist',
-                static::class,
-                $name
-            ));
+            trigger_error(sprintf('Property %s::%s does not exist in %s', static::class, $name, static::_getCaller()));
         }
 
         return $this->_getProperty($name);
@@ -437,7 +451,7 @@ abstract class StructAbstract implements JsonSerializable
     public function isSet(string $name): bool
     {
         if (!($property = $this->_getProperty($name))) {
-            throw new InvalidPropertyException($name);
+            trigger_error(sprintf('Property %s::%s does not exist in %s', static::class, $name, static::_getCaller()));
         }
 
         return $property->isSet();
@@ -476,11 +490,7 @@ abstract class StructAbstract implements JsonSerializable
             return false;
         }
 
-        if (!($property = $this->_getProperty($name))) {
-            throw new InvalidPropertyException($name);
-        }
-
-        return $property->isDirty();
+        return $this->getProperty($name)->isDirty();
     }
 
     /**
@@ -493,11 +503,7 @@ abstract class StructAbstract implements JsonSerializable
      */
     public function setDirty(string $name, bool $isDirty): self
     {
-        if (!($property = $this->_getProperty($name))) {
-            throw new InvalidPropertyException($name);
-        }
-
-        $property->setDirty($isDirty);
+        $this->getProperty($name)->setDirty($isDirty);
 
         $this->_setDirtyStateInParent();
 
@@ -693,5 +699,29 @@ abstract class StructAbstract implements JsonSerializable
         ];
 
         return $properties;
+    }
+
+    /**
+     * @return string
+     */
+    private static function _getCaller(): string
+    {
+        $trace = debug_backtrace(DEBUG_BACKTRACE_IGNORE_ARGS);
+
+        for ($i = 0; $i < count($trace) - 1; $i++) {
+            $step = $trace[$i];
+            $next = $trace[$i + 1];
+
+            if ($next['class'] === self::class) {
+                continue;
+            }
+
+            return sprintf('%s line %d',
+                $step['file'],
+                $step['line']
+            );
+        }
+
+        return '';
     }
 }

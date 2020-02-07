@@ -6,6 +6,7 @@ namespace NeoVg\Struct\Test;
 
 use NeoVg\Struct\StructAbstract;
 use NeoVg\Struct\StructProperty;
+use PHPUnit\Framework\Error\Error;
 use PHPUnit\Framework\TestCase;
 
 /**
@@ -19,6 +20,8 @@ class StructAbstractTest extends TestCase
     private $_stub;
 
     /**
+     * @throws \InvalidArgumentException
+     * @throws \PHPUnit\Framework\Exception
      * @throws \ReflectionException
      */
     public function setUp()
@@ -28,6 +31,7 @@ class StructAbstractTest extends TestCase
 
     /**
      * @throws \ReflectionException
+     * @throws \TypeError
      */
     private function _mockContent()
     {
@@ -49,7 +53,9 @@ class StructAbstractTest extends TestCase
     }
 
     /**
+     * @throws \PHPUnit\Framework\ExpectationFailedException
      * @throws \ReflectionException
+     * @throws \SebastianBergmann\RecursionContext\InvalidArgumentException
      */
     public function test__call()
     {
@@ -59,12 +65,15 @@ class StructAbstractTest extends TestCase
         $this->assertInstanceOf(StructAbstract::class, $this->_stub->test(true));
 
         # Negative
-        $this->expectException(\BadMethodCallException::class);
+        $this->expectException(Error::class);
         $this->_stub->doesNotExist();
     }
 
     /**
+     * @throws \PHPUnit\Framework\ExpectationFailedException
      * @throws \ReflectionException
+     * @throws \SebastianBergmann\RecursionContext\InvalidArgumentException
+     * @throws \TypeError
      */
     public function test__get()
     {

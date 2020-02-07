@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace NeoVg\Struct\Test;
 
 use NeoVg\Struct\StructAbstract;
+use PHPUnit\Framework\Error\Error;
 use PHPUnit\Framework\TestCase;
 
 /**
@@ -192,7 +193,7 @@ class TestStructTest extends TestCase
      */
     public function testFailMissingArgument()
     {
-        $this->expectException(\ArgumentCountError::class);
+        $this->expectException(Error::class);
         $this->_instance->bool();
     }
 
@@ -201,7 +202,8 @@ class TestStructTest extends TestCase
      */
     public function testFailType()
     {
-        $this->expectException(\TypeError::class);
+        $this->expectException(Error::class);
+        $this->expectExceptionMessage('Argument 1 passed to NeoVg\Struct\StructProperty::bool() must be of type boolean, integer given');
         $this->_instance->bool(0);
     }
 

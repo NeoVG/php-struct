@@ -13,6 +13,7 @@ class ArrayStructProperty extends StructProperty
      * @param mixed $value
      *
      * @return StructProperty
+     * @throws \TypeError
      */
     public function setValue($value): StructProperty
     {
@@ -47,6 +48,8 @@ class ArrayStructProperty extends StructProperty
 
     /**
      * @param $values
+     *
+     * @throws \TypeError
      */
     protected function _checkTypes($values): void
     {
@@ -79,6 +82,8 @@ class ArrayStructProperty extends StructProperty
     /**
      * @param int|string $key
      * @param            $value
+     *
+     * @throws \TypeError
      */
     public function checkValue($key, $value): void
     {
