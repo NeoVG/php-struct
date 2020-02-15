@@ -28,7 +28,7 @@ class PropertyTemplates
     public static function setTemplate(string $className, array $properties): void
     {
         if (isset(static::$_templates[$className])) {
-            trigger_error(sprintf('Property template for class %s is already set', $className));
+            trigger_error(sprintf('Property template for class %s is already set', $className), E_USER_ERROR);
         }
 
         static::$_templates[$className] = $properties;

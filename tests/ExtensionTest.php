@@ -8,8 +8,6 @@ use NeoVg\Struct\StructAbstract;
 use PHPUnit\Framework\TestCase;
 
 /**
- * Class SuperStruct
- *
  * @property string $super
  */
 class SuperStruct extends StructAbstract
@@ -17,8 +15,6 @@ class SuperStruct extends StructAbstract
 }
 
 /**
- * Class ExtendedStruct
- *
  * @property string $extended
  *
  * @method $this extended(string $value)
@@ -33,7 +29,8 @@ class ExtendedStruct extends SuperStruct
 class ExtensionTest extends TestCase
 {
     /**
-     *
+     * @throws \PHPUnit\Framework\ExpectationFailedException
+     * @throws \SebastianBergmann\RecursionContext\InvalidArgumentException
      */
     public function testExendedStruct()
     {

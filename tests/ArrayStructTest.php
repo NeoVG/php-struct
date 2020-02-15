@@ -13,7 +13,8 @@ use PHPUnit\Framework\TestCase;
 class ArrayStructTest extends TestCase
 {
     /**
-     *
+     * @throws \PHPUnit\Framework\ExpectationFailedException
+     * @throws \SebastianBergmann\RecursionContext\InvalidArgumentException
      */
     public function testArrayCreateFromArray()
     {
@@ -31,13 +32,14 @@ class ArrayStructTest extends TestCase
     public function testWrongType()
     {
         $this->expectException(Error::class);
-        $struct = ParentStruct::createFromArray([
+        ParentStruct::createFromArray([
             'strings' => [true],
         ]);
     }
 
     /**
-     *
+     * @throws \PHPUnit\Framework\ExpectationFailedException
+     * @throws \SebastianBergmann\RecursionContext\InvalidArgumentException
      */
     public function testChildArrayCreateFromArray()
     {
@@ -61,7 +63,7 @@ class ArrayStructTest extends TestCase
     public function testChildArrayErrors()
     {
         $this->expectException(Error::class);
-        $struct = ParentStruct::createFromArray([
+        ParentStruct::createFromArray([
             'childs' => [
                 new ParentStruct(),
             ],
@@ -69,7 +71,8 @@ class ArrayStructTest extends TestCase
     }
 
     /**
-     *
+     * @throws \PHPUnit\Framework\ExpectationFailedException
+     * @throws \SebastianBergmann\RecursionContext\InvalidArgumentException
      */
     public function testChildArraySuccesses()
     {

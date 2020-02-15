@@ -40,7 +40,7 @@ class StructAbstractTest extends TestCase
         $reflectionProperties->setAccessible(true);
 
         $reflectionProperties->setValue($this->_stub, [
-            'test' => new StructProperty(null, 'null', 'test', 'bool', null),
+            'test' => new StructProperty(null, 'null', 'test', 'boolean', false, null),
         ]);
     }
 
@@ -56,6 +56,7 @@ class StructAbstractTest extends TestCase
      * @throws \PHPUnit\Framework\ExpectationFailedException
      * @throws \ReflectionException
      * @throws \SebastianBergmann\RecursionContext\InvalidArgumentException
+     * @throws \TypeError
      */
     public function test__call()
     {

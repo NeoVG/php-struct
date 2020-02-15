@@ -22,7 +22,7 @@ class WrongClassNameAsTypeTest extends TestCase
     public function testErrorHandling()
     {
         $this->expectException(Error::class);
-        $this->expectExceptionMessage('Cannot parse data definition for NeoVg\Struct\Test\WrongClassNameStruct::property, \Foo\Bar is no valid internal datatype and no known class name.');
+        $this->expectExceptionMessage('Cannot parse definition for NeoVg\Struct\Test\WrongClassNameStruct::property, \Foo\Bar is no valid internal datatype and no known class name.');
         $instance = new WrongClassNameStruct();
     }
 }

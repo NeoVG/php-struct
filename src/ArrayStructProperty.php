@@ -20,18 +20,15 @@ class ArrayStructProperty extends StructProperty
         $this->_checkTypes($value);
 
         $this->_value = $value;
+        $this->_isSet = true;
+        $this->_isDirty = true;
 
-        if (!$this->_isSet) {
-            $this->_isSet = true;
-
-            return $this->setDirty(true);
-        }
-
-        return $this->setDirty();
+        return $this;
     }
 
     /**
      * @return StructProperty
+     * @throws NotSetException
      */
     public function setClean(): StructProperty
     {
@@ -39,11 +36,13 @@ class ArrayStructProperty extends StructProperty
             foreach (array_keys($this->_value) as $key) {
                 /** @var StructAbstract $value */
                 $value = $this->_value[$key];
-                $value->clean();
+                $value->clean(false);
             }
         }
 
-        return $this->setDirty(false);
+        $this->_isDirty = false;
+
+        return $this;
     }
 
     /**
