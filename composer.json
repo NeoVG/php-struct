@@ -31,5 +31,8 @@
         "psr-4": {
             "NeoVg\\Struct\\Test\\": "tests/"
         }
+    },
+    "scripts": {
+        "test": "vendor/bin/phpunit"
     }
 }
