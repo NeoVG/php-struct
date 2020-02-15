@@ -45,7 +45,8 @@ class StructAbstractTest extends TestCase
     }
 
     /**
-     *
+     * @throws \PHPUnit\Framework\ExpectationFailedException
+     * @throws \SebastianBergmann\RecursionContext\InvalidArgumentException
      */
     public function testNew()
     {
@@ -84,7 +85,8 @@ class StructAbstractTest extends TestCase
     }
 
     /**
-     *
+     * @throws \PHPUnit\Framework\ExpectationFailedException
+     * @throws \SebastianBergmann\RecursionContext\InvalidArgumentException
      */
     public function testToArray()
     {
@@ -92,7 +94,8 @@ class StructAbstractTest extends TestCase
     }
 
     /**
-     *
+     * @throws \PHPUnit\Framework\ExpectationFailedException
+     * @throws \SebastianBergmann\RecursionContext\InvalidArgumentException
      */
     public function test_jsonSerialize()
     {
@@ -100,7 +103,8 @@ class StructAbstractTest extends TestCase
     }
 
     /**
-     *
+     * @throws \PHPUnit\Framework\ExpectationFailedException
+     * @throws \SebastianBergmann\RecursionContext\InvalidArgumentException
      */
     public function test__toString()
     {

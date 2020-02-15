@@ -24,7 +24,8 @@ class FluentSettersStruct extends StructAbstract
 class FluentSettersTest extends TestCase
 {
     /**
-     *
+     * @throws \PHPUnit\Framework\ExpectationFailedException
+     * @throws \SebastianBergmann\RecursionContext\InvalidArgumentException
      */
     public function testFluentSetters()
     {

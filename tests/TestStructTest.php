@@ -86,7 +86,8 @@ class TestStructTest extends TestCase
     }
 
     /**
-     *
+     * @throws \PHPUnit\Framework\ExpectationFailedException
+     * @throws \SebastianBergmann\RecursionContext\InvalidArgumentException
      */
     public function testNew()
     {
@@ -94,7 +95,8 @@ class TestStructTest extends TestCase
     }
 
     /**
-     *
+     * @throws \PHPUnit\Framework\ExpectationFailedException
+     * @throws \SebastianBergmann\RecursionContext\InvalidArgumentException
      */
     public function testNull()
     {
@@ -103,7 +105,8 @@ class TestStructTest extends TestCase
     }
 
     /**
-     *
+     * @throws \PHPUnit\Framework\ExpectationFailedException
+     * @throws \SebastianBergmann\RecursionContext\InvalidArgumentException
      */
     public function testBool()
     {
@@ -113,7 +116,8 @@ class TestStructTest extends TestCase
     }
 
     /**
-     *
+     * @throws \PHPUnit\Framework\ExpectationFailedException
+     * @throws \SebastianBergmann\RecursionContext\InvalidArgumentException
      */
     public function testInt()
     {
@@ -123,7 +127,8 @@ class TestStructTest extends TestCase
     }
 
     /**
-     *
+     * @throws \PHPUnit\Framework\ExpectationFailedException
+     * @throws \SebastianBergmann\RecursionContext\InvalidArgumentException
      */
     public function testDouble()
     {
@@ -133,7 +138,8 @@ class TestStructTest extends TestCase
     }
 
     /**
-     *
+     * @throws \PHPUnit\Framework\ExpectationFailedException
+     * @throws \SebastianBergmann\RecursionContext\InvalidArgumentException
      */
     public function testString()
     {
@@ -142,7 +148,8 @@ class TestStructTest extends TestCase
     }
 
     /**
-     *
+     * @throws \PHPUnit\Framework\ExpectationFailedException
+     * @throws \SebastianBergmann\RecursionContext\InvalidArgumentException
      */
     public function testArray()
     {
@@ -151,7 +158,8 @@ class TestStructTest extends TestCase
     }
 
     /**
-     *
+     * @throws \PHPUnit\Framework\ExpectationFailedException
+     * @throws \SebastianBergmann\RecursionContext\InvalidArgumentException
      */
     public function testStdClass()
     {
@@ -161,7 +169,8 @@ class TestStructTest extends TestCase
     }
 
     /**
-     * @throws \Exception
+     * @throws \PHPUnit\Framework\ExpectationFailedException
+     * @throws \SebastianBergmann\RecursionContext\InvalidArgumentException
      */
     public function testInterface()
     {
@@ -171,7 +180,8 @@ class TestStructTest extends TestCase
     }
 
     /**
-     *
+     * @throws \PHPUnit\Framework\ExpectationFailedException
+     * @throws \SebastianBergmann\RecursionContext\InvalidArgumentException
      */
     public function testCallable()
     {
@@ -181,7 +191,8 @@ class TestStructTest extends TestCase
     }
 
     /**
-     *
+     * @throws \PHPUnit\Framework\ExpectationFailedException
+     * @throws \SebastianBergmann\RecursionContext\InvalidArgumentException
      */
     public function testDefault()
     {
@@ -208,7 +219,8 @@ class TestStructTest extends TestCase
     }
 
     /**
-     *
+     * @throws \PHPUnit\Framework\ExpectationFailedException
+     * @throws \SebastianBergmann\RecursionContext\InvalidArgumentException
      */
     public function testToArray()
     {
@@ -235,7 +247,8 @@ class TestStructTest extends TestCase
     }
 
     /**
-     *
+     * @throws \PHPUnit\Framework\ExpectationFailedException
+     * @throws \SebastianBergmann\RecursionContext\InvalidArgumentException
      */
     public function testJsonSerialize()
     {
@@ -262,7 +275,8 @@ class TestStructTest extends TestCase
     }
 
     /**
-     *
+     * @throws \PHPUnit\Framework\ExpectationFailedException
+     * @throws \SebastianBergmann\RecursionContext\InvalidArgumentException
      */
     public function test__toString()
     {

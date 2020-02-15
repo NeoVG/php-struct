@@ -2,6 +2,25 @@
 
 declare(strict_types=1);
 
+namespace NeoVg\Struct\Test;
+
+use NeoVg\Struct\StructAbstract;
+
+/**
+ * @property string[]                               $strings
+ * @property \NeoVg\Struct\Test\Child\ChildStruct   $child
+ * @property \NeoVg\Struct\Test\Child\ChildStruct[] $childs
+ * @property Child\ChildStruct                      $relativeChild
+ *
+ * @method $this strings(array $values)
+ * @method $this child(\NeoVg\Struct\Test\Child\ChildStruct $value)
+ * @method $this childs(\NeoVg\Struct\Test\Child\ChildStruct[] $values);
+ * @method $this relativeChild(Child\ChildStruct $value)
+ */
+class ParentStruct extends StructAbstract
+{
+}
+
 namespace NeoVg\Struct\Test\Child;
 
 use NeoVg\Struct\StructAbstract;
@@ -19,23 +38,7 @@ class ChildStruct extends StructAbstract
 
 namespace NeoVg\Struct\Test;
 
-use NeoVg\Struct\StructAbstract;
 use PHPUnit\Framework\TestCase;
-
-/**
- * @property string[]                               $strings
- * @property \NeoVg\Struct\Test\Child\ChildStruct   $child
- * @property \NeoVg\Struct\Test\Child\ChildStruct[] $childs
- * @property Child\ChildStruct                      $relativeChild
- *
- * @method $this strings(array $values)
- * @method $this child(\NeoVg\Struct\Test\Child\ChildStruct $value)
- * @method $this childs(\NeoVg\Struct\Test\Child\ChildStruct[] $values);
- * @method $this relativeChild(Child\ChildStruct $value)
- */
-class ParentStruct extends StructAbstract
-{
-}
 
 /**
  * Class ParentStructTest
@@ -43,7 +46,8 @@ class ParentStruct extends StructAbstract
 class ParentStructTest extends TestCase
 {
     /**
-     *
+     * @throws \PHPUnit\Framework\ExpectationFailedException
+     * @throws \SebastianBergmann\RecursionContext\InvalidArgumentException
      */
     public function testInstanciation()
     {
@@ -58,7 +62,8 @@ class ParentStructTest extends TestCase
     }
 
     /**
-     *
+     * @throws \PHPUnit\Framework\ExpectationFailedException
+     * @throws \SebastianBergmann\RecursionContext\InvalidArgumentException
      */
     public function testDirtyFlag()
     {
@@ -88,7 +93,8 @@ class ParentStructTest extends TestCase
     }
 
     /**
-     *
+     * @throws \PHPUnit\Framework\ExpectationFailedException
+     * @throws \SebastianBergmann\RecursionContext\InvalidArgumentException
      */
     public function testDirtyOnly()
     {
@@ -98,7 +104,7 @@ class ParentStructTest extends TestCase
                 'value2' => 'bar',
             ],
         ])->clean();
-        $struct1->child->setDirty('value1', true);
+        $struct1->child->setDirty('value1');
         $struct2 = $struct1->withDirtyPropertiesOnly();
         $this->assertEquals(<<<'EOD'
 {
@@ -111,7 +117,8 @@ EOD
     }
 
     /**
-     *
+     * @throws \PHPUnit\Framework\ExpectationFailedException
+     * @throws \SebastianBergmann\RecursionContext\InvalidArgumentException
      */
     public function testJsonSerialize()
     {

@@ -36,7 +36,8 @@ class SimpleTestStructTest extends TestCase
     protected $_instance;
 
     /**
-     *
+     * @throws \PHPUnit\Framework\ExpectationFailedException
+     * @throws \SebastianBergmann\RecursionContext\InvalidArgumentException
      */
     public function testInstanciation()
     {
@@ -47,7 +48,8 @@ class SimpleTestStructTest extends TestCase
     }
 
     /**
-     *
+     * @throws \PHPUnit\Framework\ExpectationFailedException
+     * @throws \SebastianBergmann\RecursionContext\InvalidArgumentException
      */
     public function testProperties()
     {
@@ -84,7 +86,8 @@ class SimpleTestStructTest extends TestCase
     }
 
     /**
-     *
+     * @throws \PHPUnit\Framework\ExpectationFailedException
+     * @throws \SebastianBergmann\RecursionContext\InvalidArgumentException
      */
     public function testSetterAndGetter()
     {
@@ -117,7 +120,8 @@ class SimpleTestStructTest extends TestCase
     }
 
     /**
-     *
+     * @throws \PHPUnit\Framework\ExpectationFailedException
+     * @throws \SebastianBergmann\RecursionContext\InvalidArgumentException
      */
     public function testDefault()
     {
@@ -135,6 +139,8 @@ class SimpleTestStructTest extends TestCase
 
     /**
      * @throws \JsonException
+     * @throws \PHPUnit\Framework\ExpectationFailedException
+     * @throws \SebastianBergmann\RecursionContext\InvalidArgumentException
      */
     public function testCreateFromJsonErrors()
     {
@@ -158,7 +164,8 @@ class SimpleTestStructTest extends TestCase
     }
 
     /**
-     *
+     * @throws \PHPUnit\Framework\ExpectationFailedException
+     * @throws \SebastianBergmann\RecursionContext\InvalidArgumentException
      */
     public function testCreateFromArrayWithAdditionalProperties()
     {
@@ -175,7 +182,8 @@ EOD
     }
 
     /**
-     *
+     * @throws \PHPUnit\Framework\ExpectationFailedException
+     * @throws \SebastianBergmann\RecursionContext\InvalidArgumentException
      */
     public function testSlashEscaping()
     {

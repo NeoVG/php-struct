@@ -22,14 +22,14 @@ class B extends A
 }
 
 /**
- * @property \NeoVg\Struct\Test\A $foo
+ * @property A $foo
  */
 class DefinePropertyStruct extends StructAbstract
 {
 }
 
 /**
- * @property \NeoVg\Struct\Test\B $foo
+ * @property B $foo
  */
 class RedefinePropertyStruct extends DefinePropertyStruct
 {
@@ -41,7 +41,8 @@ class RedefinePropertyStruct extends DefinePropertyStruct
 class RedefinedPropertiesTest extends TestCase
 {
     /**
-     *
+     * @throws \PHPUnit\Framework\ExpectationFailedException
+     * @throws \SebastianBergmann\RecursionContext\InvalidArgumentException
      */
     public function testRedefineProperties()
     {
