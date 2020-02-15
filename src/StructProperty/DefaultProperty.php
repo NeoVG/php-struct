@@ -2,32 +2,24 @@
 
 declare(strict_types=1);
 
-namespace NeoVg\Struct;
+namespace NeoVg\Struct\StructProperty;
+
+use NeoVg\Struct\StructAbstract;
 
 /**
  * Class StructProperty
  *
  * Represents one property in a Struct.
  */
-class StructProperty
+class DefaultProperty
 {
-    protected const INTERNAL_TYPES = [
-        'boolean',
-        'integer',
-        'double',
-        'string',
-        'array',
-        'callable',
-        'mixed',
-    ];
-
     /**
      * @var StructAbstract
      */
     protected $_parent;
 
     /**
-     * @var
+     * @var string
      */
     protected $_class;
 
@@ -42,24 +34,9 @@ class StructProperty
     protected $_type;
 
     /**
-     * @var bool
-     */
-    protected $_containsObject;
-
-    /**
-     * @var bool
-     */
-    protected $_containsStruct;
-
-    /**
      * @var mixed
      */
     protected $_value;
-
-    /**
-     * @var mixed
-     */
-    protected $_originalValue = null;
 
     /**
      * @var null
@@ -83,36 +60,22 @@ class StructProperty
      * @param string         $class
      * @param string         $name
      * @param string         $type
+     * @param bool           $hasDefaultValue
      * @param mixed          $defaultValue
      *
      * @throws \TypeError
      */
-    public function __construct(?StructAbstract $parent, string $class, string $name, string $type, $defaultValue)
+    public function __construct(?StructAbstract $parent, string $class, string $name, string $type, bool $hasDefaultValue, $defaultValue)
     {
         $this->_parent = $parent;
         $this->_class = $class;
         $this->_name = $name;
+        $this->_type = $type;
 
-        if (!($this->_type = $this->_normalizeType($type))) {
-            trigger_error(
-                sprintf('Cannot parse data definition for %s::%s, %s is no valid internal datatype and no known class name.',
-                    get_class($this->_parent),
-                    $name,
-                    $type
-                ),
-                E_USER_ERROR
-            );
-        }
-
-        $this->_type = $this->_normalizeType($type);
-
-        if ($defaultValue !== null) {
+        if ($hasDefaultValue) {
             $this->_defaultValue = $defaultValue;
             $this->setValue($defaultValue);
         }
-
-        $this->_containsObject = !in_array($this->_type, static::INTERNAL_TYPES);
-        $this->_containsStruct = $this->_containsObject && is_subclass_of($this->_type, StructAbstract::class);
     }
 
     /**
@@ -153,7 +116,7 @@ class StructProperty
      */
     public function containsObject(): bool
     {
-        return $this->_containsObject;
+        return class_exists($this->_type);
     }
 
     /**
@@ -163,7 +126,15 @@ class StructProperty
      */
     public function containsStruct(): bool
     {
-        return $this->_containsStruct;
+        return false;
+    }
+
+    /**
+     * @return bool
+     */
+    public function containsEnum(): bool
+    {
+        return false;
     }
 
     /**
@@ -187,11 +158,21 @@ class StructProperty
     }
 
     /**
+     * Returns whether this property has been set since the structs creation.
+     *
+     * @return bool
+     */
+    public function isSet(): bool
+    {
+        return $this->_isSet;
+    }
+
+    /**
      * Sets the value of the property.
      *
      * @param mixed $value
      *
-     * @return StructProperty
+     * @return DefaultProperty
      * @throws \TypeError
      */
     public function setValue($value): self
@@ -208,14 +189,10 @@ class StructProperty
         }
 
         $this->_value = $value;
+        $this->_isSet = true;
+        $this->_isDirty = true;
 
-        if (!$this->_isSet) {
-            $this->_isSet = true;
-
-            return $this->setDirty(true);
-        }
-
-        return $this->setDirty();
+        return $this;
     }
 
     /**
@@ -229,16 +206,6 @@ class StructProperty
     }
 
     /**
-     * Returns whether this property has been set since the structs creation.
-     *
-     * @return bool
-     */
-    public function isSet(): bool
-    {
-        return $this->_isSet;
-    }
-
-    /**
      * Returns whether this propery has been set since its creation.
      *
      * @return bool
@@ -249,83 +216,31 @@ class StructProperty
     }
 
     /**
-     * Shortcut for setting this property to be clean.
-     *
-     * @return StructProperty
-     */
-    public function setClean(): self
-    {
-        if ($this->containsStruct() && $this->_value !== null) {
-            $this->_value->clean();
-        }
-
-        return $this->setDirty(false);
-    }
-
-    /**
      * Indicates that this property has been set since its creation.
      *
-     * @param bool $isDirty
-     *
-     * @return StructProperty
+     * @return DefaultProperty
      */
-    public function setDirty(bool $isDirty = null): self
+    public function setDirty(): self
     {
-        if ($isDirty === null) {
-            $isDirty = $this->_value !== $this->_originalValue;
-        } elseif ($isDirty === false) {
-            $this->_originalValue = $this->_value;
+        if ($this->isSet()) {
+            $this->_isDirty = true;
         }
-
-        $this->_isDirty = $isDirty;
 
         return $this;
     }
 
     /**
-     * Normalizes the type read from the phpDoc annotation to be compatible with gettype().
+     * Shortcut for setting this property to be clean.
      *
-     * @param string $type
-     *
-     * @return string|null
+     * @return DefaultProperty
      */
-    protected function _normalizeType(string $type): ?string
+    public function setClean(): self
     {
-        # Normalize alternative spellings for internal types
-        switch ($type) {
-            case 'bool':
-                $type = 'boolean';
-                break;
-            case 'int':
-                $type = 'integer';
-                break;
-            case 'float':
-                $type = 'double';
-                break;
+        if ($this->isSet()) {
+            $this->_isDirty = false;
         }
 
-        # If type is internal, immediately return
-        if (in_array($type, static::INTERNAL_TYPES)) {
-            return $type;
-        }
-
-        # If type is a class including full namespace, check if it exists and if yes, immediately return
-        if (class_exists($type) || interface_exists($type)) {
-            return $type;
-        }
-
-        # Check if type is a class with relative namespace, check if it exists and if yes, immediately return
-        $type = sprintf(
-            '\%s\%s',
-            preg_replace('/\\\?[^\\\]+$/', '', get_class($this->_parent)),
-            $type
-        );
-        if (class_exists($type) || interface_exists($type)) {
-            return $type;
-        }
-
-        # Unknown type, return null
-        return null;
+        return $this;
     }
 
     /**
@@ -365,11 +280,14 @@ class StructProperty
             }
         }
 
-        if (isset($this->_containsObject)) {
-            $properties['[containsObject]'] = $this->_containsObject;
+        if ($this->containsObject()) {
+            $properties['[containsObject]'] = true;
         }
-        if (isset($this->_containsStruct)) {
-            $properties['[containsStruct'] = $this->_containsStruct;
+        if ($this->containsStruct()) {
+            $properties['[containsStruct'] = true;
+        }
+        if ($this->containsEnum()) {
+            $properties['[containsEnum'] = true;
         }
 
         return $properties;

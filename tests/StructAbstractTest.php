@@ -5,7 +5,7 @@ declare(strict_types=1);
 namespace NeoVg\Struct\Test;
 
 use NeoVg\Struct\StructAbstract;
-use NeoVg\Struct\StructProperty;
+use NeoVg\Struct\StructProperty\DefaultProperty;
 use PHPUnit\Framework\Error\Error;
 use PHPUnit\Framework\TestCase;
 
@@ -40,12 +40,13 @@ class StructAbstractTest extends TestCase
         $reflectionProperties->setAccessible(true);
 
         $reflectionProperties->setValue($this->_stub, [
-            'test' => new StructProperty(null, 'null', 'test', 'bool', null),
+            'test' => new DefaultProperty(null, 'null', 'test', 'boolean', false, null),
         ]);
     }
 
     /**
-     *
+     * @throws \PHPUnit\Framework\ExpectationFailedException
+     * @throws \SebastianBergmann\RecursionContext\InvalidArgumentException
      */
     public function testNew()
     {
@@ -56,6 +57,7 @@ class StructAbstractTest extends TestCase
      * @throws \PHPUnit\Framework\ExpectationFailedException
      * @throws \ReflectionException
      * @throws \SebastianBergmann\RecursionContext\InvalidArgumentException
+     * @throws \TypeError
      */
     public function test__call()
     {
@@ -83,7 +85,8 @@ class StructAbstractTest extends TestCase
     }
 
     /**
-     *
+     * @throws \PHPUnit\Framework\ExpectationFailedException
+     * @throws \SebastianBergmann\RecursionContext\InvalidArgumentException
      */
     public function testToArray()
     {
@@ -91,7 +94,8 @@ class StructAbstractTest extends TestCase
     }
 
     /**
-     *
+     * @throws \PHPUnit\Framework\ExpectationFailedException
+     * @throws \SebastianBergmann\RecursionContext\InvalidArgumentException
      */
     public function test_jsonSerialize()
     {
@@ -99,7 +103,8 @@ class StructAbstractTest extends TestCase
     }
 
     /**
-     *
+     * @throws \PHPUnit\Framework\ExpectationFailedException
+     * @throws \SebastianBergmann\RecursionContext\InvalidArgumentException
      */
     public function test__toString()
     {

@@ -4,28 +4,9 @@ declare(strict_types=1);
 
 namespace NeoVg\Struct\Test;
 
-use NeoVg\Struct\StructAbstract;
+use NeoVg\Struct\Test\Struct\ExtendedStruct;
+use NeoVg\Struct\Test\Struct\SuperStruct;
 use PHPUnit\Framework\TestCase;
-
-/**
- * Class SuperStruct
- *
- * @property string $super
- */
-class SuperStruct extends StructAbstract
-{
-}
-
-/**
- * Class ExtendedStruct
- *
- * @property string $extended
- *
- * @method $this extended(string $value)
- */
-class ExtendedStruct extends SuperStruct
-{
-}
 
 /**
  * Class ExtensionTest
@@ -33,7 +14,8 @@ class ExtendedStruct extends SuperStruct
 class ExtensionTest extends TestCase
 {
     /**
-     *
+     * @throws \PHPUnit\Framework\ExpectationFailedException
+     * @throws \SebastianBergmann\RecursionContext\InvalidArgumentException
      */
     public function testExendedStruct()
     {

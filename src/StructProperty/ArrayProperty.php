@@ -2,48 +2,38 @@
 
 declare(strict_types=1);
 
-namespace NeoVg\Struct;
+namespace NeoVg\Struct\StructProperty;
 
 /**
  * Class ArrayStructProperty
  */
-class ArrayStructProperty extends StructProperty
+class ArrayProperty extends DefaultProperty
 {
     /**
      * @param mixed $value
      *
-     * @return StructProperty
+     * @return DefaultProperty
      * @throws \TypeError
      */
-    public function setValue($value): StructProperty
+    public function setValue($value): DefaultProperty
     {
         $this->_checkTypes($value);
 
         $this->_value = $value;
+        $this->_isSet = true;
+        $this->_isDirty = true;
 
-        if (!$this->_isSet) {
-            $this->_isSet = true;
-
-            return $this->setDirty(true);
-        }
-
-        return $this->setDirty();
+        return $this;
     }
 
     /**
-     * @return StructProperty
+     * @return $this
      */
-    public function setClean(): StructProperty
+    public function setClean(): DefaultProperty
     {
-        if ($this->containsStruct() && $this->_value !== null) {
-            foreach (array_keys($this->_value) as $key) {
-                /** @var StructAbstract $value */
-                $value = $this->_value[$key];
-                $value->clean();
-            }
-        }
+        $this->_isDirty = false;
 
-        return $this->setDirty(false);
+        return $this;
     }
 
     /**
@@ -83,9 +73,10 @@ class ArrayStructProperty extends StructProperty
      * @param int|string $key
      * @param            $value
      *
+     * @return
      * @throws \TypeError
      */
-    public function checkValue($key, $value): void
+    public function checkValue($key, $value)
     {
         if (!$this->_isOfValidType($value)) {
             throw new \TypeError(sprintf('Key %s in argument 1 passed to %s::%s() must be of type %s, %s given',
@@ -96,5 +87,7 @@ class ArrayStructProperty extends StructProperty
                 gettype($value)
             ));
         }
+
+        return $value;
     }
 }

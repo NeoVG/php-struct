@@ -4,19 +4,8 @@ declare(strict_types=1);
 
 namespace NeoVg\Struct\Test;
 
-use NeoVg\Struct\StructAbstract;
+use NeoVg\Struct\Test\Struct\FluentSettersStruct;
 use PHPUnit\Framework\TestCase;
-
-/**
- * @property string $property1
- * @property string $property2
- *
- * @method $this property1(string $value)
- * @method $this withProperty2(string $value)
- */
-class FluentSettersStruct extends StructAbstract
-{
-}
 
 /**
  * Class FluentSettersTest
@@ -24,7 +13,8 @@ class FluentSettersStruct extends StructAbstract
 class FluentSettersTest extends TestCase
 {
     /**
-     *
+     * @throws \PHPUnit\Framework\ExpectationFailedException
+     * @throws \SebastianBergmann\RecursionContext\InvalidArgumentException
      */
     public function testFluentSetters()
     {

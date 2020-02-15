@@ -4,48 +4,9 @@ declare(strict_types=1);
 
 namespace NeoVg\Struct\Test;
 
-use NeoVg\Struct\StructAbstract;
+use NeoVg\Struct\Test\Struct\FluentTestStruct;
 use PHPUnit\Framework\Error\Error;
 use PHPUnit\Framework\TestCase;
-
-/**
- * Class TestStruct
- *
- * A simple example Struct used to test all available data types for properties.
- *
- * @property bool               $bool
- * @property boolean            $boolean
- * @property int                $int
- * @property integer            $integer
- * @property float              $float
- * @property double             $double
- * @property string             $string
- * @property array              $array
- * @property \stdClass          $stdClass
- * @property \DateTimeInterface $interface
- * @property callable           $callable
- * @property string             $default
- *
- * @method $this bool(bool $value)
- * @method $this boolean(boolean $value)
- * @method $this int(int $value)
- * @method $this integer(integer $value)
- * @method $this float(float $value)
- * @method $this double(double $value)
- * @method $this string(string $value)
- * @method $this array(array $value)
- * @method $this stdClass(\stdClass $value)
- * @method $this interface(\DateTimeInterface $value)
- * @method $this callable(callable $value)
- * @method $this default(string $value)
- */
-class TestStruct extends StructAbstract
-{
-    /**
-     * @var string
-     */
-    protected $default = 'default value';
-}
 
 /**
  * Class TestStructTest
@@ -53,7 +14,7 @@ class TestStruct extends StructAbstract
 class TestStructTest extends TestCase
 {
     /**
-     * @var TestStruct
+     * @var FluentTestStruct
      */
     protected $_instance;
 
@@ -62,7 +23,7 @@ class TestStructTest extends TestCase
      */
     public function setUp()
     {
-        $this->_instance = new TestStruct();
+        $this->_instance = new FluentTestStruct();
     }
 
     /**
@@ -86,102 +47,113 @@ class TestStructTest extends TestCase
     }
 
     /**
-     *
+     * @throws \PHPUnit\Framework\ExpectationFailedException
+     * @throws \SebastianBergmann\RecursionContext\InvalidArgumentException
      */
     public function testNew()
     {
-        $this->assertInstanceOf(TestStruct::class, $this->_instance);
+        $this->assertInstanceOf(FluentTestStruct::class, $this->_instance);
     }
 
     /**
-     *
+     * @throws \PHPUnit\Framework\ExpectationFailedException
+     * @throws \SebastianBergmann\RecursionContext\InvalidArgumentException
      */
     public function testNull()
     {
-        $this->assertInstanceOf(TestStruct::class, $this->_instance->bool(null));
+        $this->assertInstanceOf(FluentTestStruct::class, $this->_instance->bool(null));
         $this->assertNull($this->_instance->bool);
     }
 
     /**
-     *
+     * @throws \PHPUnit\Framework\ExpectationFailedException
+     * @throws \SebastianBergmann\RecursionContext\InvalidArgumentException
      */
     public function testBool()
     {
-        $this->assertInstanceOf(TestStruct::class, $this->_instance->bool(true)->boolean(false));
+        $this->assertInstanceOf(FluentTestStruct::class, $this->_instance->bool(true)->boolean(false));
         $this->assertIsBool($this->_instance->bool);
         $this->assertIsBool($this->_instance->boolean);
     }
 
     /**
-     *
+     * @throws \PHPUnit\Framework\ExpectationFailedException
+     * @throws \SebastianBergmann\RecursionContext\InvalidArgumentException
      */
     public function testInt()
     {
-        $this->assertInstanceOf(TestStruct::class, $this->_instance->int(0)->integer(1));
+        $this->assertInstanceOf(FluentTestStruct::class, $this->_instance->int(0)->integer(1));
         $this->assertIsInt($this->_instance->int);
         $this->assertIsInt($this->_instance->integer);
     }
 
     /**
-     *
+     * @throws \PHPUnit\Framework\ExpectationFailedException
+     * @throws \SebastianBergmann\RecursionContext\InvalidArgumentException
      */
     public function testDouble()
     {
-        $this->assertInstanceOf(TestStruct::class, $this->_instance->float(0.0)->double(0.815));
+        $this->assertInstanceOf(FluentTestStruct::class, $this->_instance->float(0.0)->double(0.815));
         $this->assertIsFloat($this->_instance->float);
         $this->assertIsFloat($this->_instance->double);
     }
 
     /**
-     *
+     * @throws \PHPUnit\Framework\ExpectationFailedException
+     * @throws \SebastianBergmann\RecursionContext\InvalidArgumentException
      */
     public function testString()
     {
-        $this->assertInstanceOf(TestStruct::class, $this->_instance->string(''));
+        $this->assertInstanceOf(FluentTestStruct::class, $this->_instance->string(''));
         $this->assertIsString($this->_instance->string);
     }
 
     /**
-     *
+     * @throws \PHPUnit\Framework\ExpectationFailedException
+     * @throws \SebastianBergmann\RecursionContext\InvalidArgumentException
      */
     public function testArray()
     {
-        $this->assertInstanceOf(TestStruct::class, $this->_instance->array([]));
+        $this->assertInstanceOf(FluentTestStruct::class, $this->_instance->array([]));
         $this->assertIsArray($this->_instance->array);
     }
 
     /**
-     *
+     * @throws \PHPUnit\Framework\ExpectationFailedException
+     * @throws \SebastianBergmann\RecursionContext\InvalidArgumentException
      */
     public function testStdClass()
     {
-        $this->assertInstanceOf(TestStruct::class, $this->_instance->stdClass(new \stdClass));
+        $this->assertInstanceOf(FluentTestStruct::class, $this->_instance->stdClass(new \stdClass));
         $this->assertIsObject($this->_instance->stdClass);
         $this->assertInstanceOf(\stdClass::class, $this->_instance->stdClass);
     }
 
     /**
-     * @throws \Exception
+     * @throws \PHPUnit\Framework\ExpectationFailedException
+     * @throws \SebastianBergmann\RecursionContext\InvalidArgumentException
      */
     public function testInterface()
     {
-        $this->assertInstanceOf(TestStruct::class, $this->_instance->interface(new \DateTime()));
+        $this->assertInstanceOf(FluentTestStruct::class, $this->_instance->interface(new \DateTime()));
         $this->assertIsObject($this->_instance->interface);
         $this->assertInstanceOf(\DateTimeInterface::class, $this->_instance->interface);
     }
 
     /**
-     *
+     * @throws \PHPUnit\Framework\ExpectationFailedException
+     * @throws \SebastianBergmann\RecursionContext\InvalidArgumentException
      */
     public function testCallable()
     {
-        $this->assertInstanceOf(TestStruct::class, $this->_instance->callable(function () {
+        $this->assertInstanceOf(FluentTestStruct::class, $this->_instance->callable(function () {
         }));
         $this->assertIsCallable($this->_instance->callable);
     }
 
     /**
-     *
+     * @throws \PHPUnit\Framework\ExpectationFailedException
+     * @throws \SebastianBergmann\RecursionContext\InvalidArgumentException
      */
     public function testDefault()
     {
@@ -203,12 +175,13 @@ class TestStructTest extends TestCase
     public function testFailType()
     {
         $this->expectException(Error::class);
-        $this->expectExceptionMessage('Argument 1 passed to NeoVg\Struct\StructProperty::bool() must be of type boolean, integer given');
+        $this->expectExceptionMessage('Argument 1 passed to NeoVg\Struct\StructProperty\DefaultProperty::bool() must be of type boolean, integer given');
         $this->_instance->bool(0);
     }
 
     /**
-     *
+     * @throws \PHPUnit\Framework\ExpectationFailedException
+     * @throws \SebastianBergmann\RecursionContext\InvalidArgumentException
      */
     public function testToArray()
     {
@@ -235,7 +208,8 @@ class TestStructTest extends TestCase
     }
 
     /**
-     *
+     * @throws \PHPUnit\Framework\ExpectationFailedException
+     * @throws \SebastianBergmann\RecursionContext\InvalidArgumentException
      */
     public function testJsonSerialize()
     {
@@ -262,7 +236,8 @@ class TestStructTest extends TestCase
     }
 
     /**
-     *
+     * @throws \PHPUnit\Framework\ExpectationFailedException
+     * @throws \SebastianBergmann\RecursionContext\InvalidArgumentException
      */
     public function test__toString()
     {

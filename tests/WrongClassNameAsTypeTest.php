@@ -4,25 +4,22 @@ declare(strict_types=1);
 
 namespace NeoVg\Struct\Test;
 
-use NeoVg\Struct\StructAbstract;
+use NeoVg\Struct\Test\Struct\WrongClassNameStruct;
 use PHPUnit\Framework\Error\Error;
 use PHPUnit\Framework\TestCase;
 
 /**
- * Class WrongClassNameStruct
- *
- * @property \Foo\Bar $property
+ * Class WrongClassNameAsTypeTest
  */
-class WrongClassNameStruct extends StructAbstract
-{
-}
-
 class WrongClassNameAsTypeTest extends TestCase
 {
+    /**
+     *
+     */
     public function testErrorHandling()
     {
         $this->expectException(Error::class);
-        $this->expectExceptionMessage('Cannot parse data definition for NeoVg\Struct\Test\WrongClassNameStruct::property, \Foo\Bar is no valid internal datatype and no known class name.');
-        $instance = new WrongClassNameStruct();
+        $this->expectExceptionMessage('Cannot parse definition for NeoVg\Struct\Test\Struct\WrongClassNameStruct::property, \Foo\Bar is no valid internal datatype and no known class name.');
+        new WrongClassNameStruct();
     }
 }

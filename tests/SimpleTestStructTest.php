@@ -5,25 +5,9 @@ declare(strict_types=1);
 namespace NeoVg\Struct\Test;
 
 use NeoVg\Struct\StructAbstract;
-use NeoVg\Struct\StructProperty;
+use NeoVg\Struct\StructProperty\DefaultProperty;
+use NeoVg\Struct\Test\Struct\SimpleTestStruct;
 use PHPUnit\Framework\TestCase;
-
-/**
- * Class NewTestStruct
- *
- * @property bool      $bool
- * @property int       $int
- * @property float     $float
- * @property string    $string
- * @property array     $array
- * @property \stdClass $stdClass
- * @property string    $default
- * @property mixed     $mixed
- */
-class SimpleTestStruct extends StructAbstract
-{
-    protected $default = 'default value';
-}
 
 /**
  * Class TestStructTest
@@ -36,7 +20,8 @@ class SimpleTestStructTest extends TestCase
     protected $_instance;
 
     /**
-     *
+     * @throws \PHPUnit\Framework\ExpectationFailedException
+     * @throws \SebastianBergmann\RecursionContext\InvalidArgumentException
      */
     public function testInstanciation()
     {
@@ -47,7 +32,8 @@ class SimpleTestStructTest extends TestCase
     }
 
     /**
-     *
+     * @throws \PHPUnit\Framework\ExpectationFailedException
+     * @throws \SebastianBergmann\RecursionContext\InvalidArgumentException
      */
     public function testProperties()
     {
@@ -64,7 +50,7 @@ class SimpleTestStructTest extends TestCase
             'stdClass' => 'stdClass',
             'default'  => 'default',
             'mixed'    => 'mixed',
-        ], array_map(function (StructProperty $property) {
+        ], array_map(function (DefaultProperty $property) {
             return $property->getName();
         }, $properties));
 
@@ -78,13 +64,14 @@ class SimpleTestStructTest extends TestCase
             'float'    => 'double',
             'stdClass' => '\stdClass',
             'mixed'    => 'mixed',
-        ], array_map(function (StructProperty $property) {
+        ], array_map(function (DefaultProperty $property) {
             return $property->getType();
         }, $properties));
     }
 
     /**
-     *
+     * @throws \PHPUnit\Framework\ExpectationFailedException
+     * @throws \SebastianBergmann\RecursionContext\InvalidArgumentException
      */
     public function testSetterAndGetter()
     {
@@ -117,7 +104,8 @@ class SimpleTestStructTest extends TestCase
     }
 
     /**
-     *
+     * @throws \PHPUnit\Framework\ExpectationFailedException
+     * @throws \SebastianBergmann\RecursionContext\InvalidArgumentException
      */
     public function testDefault()
     {
@@ -135,6 +123,8 @@ class SimpleTestStructTest extends TestCase
 
     /**
      * @throws \JsonException
+     * @throws \PHPUnit\Framework\ExpectationFailedException
+     * @throws \SebastianBergmann\RecursionContext\InvalidArgumentException
      */
     public function testCreateFromJsonErrors()
     {
@@ -158,7 +148,8 @@ class SimpleTestStructTest extends TestCase
     }
 
     /**
-     *
+     * @throws \PHPUnit\Framework\ExpectationFailedException
+     * @throws \SebastianBergmann\RecursionContext\InvalidArgumentException
      */
     public function testCreateFromArrayWithAdditionalProperties()
     {
@@ -175,7 +166,8 @@ EOD
     }
 
     /**
-     *
+     * @throws \PHPUnit\Framework\ExpectationFailedException
+     * @throws \SebastianBergmann\RecursionContext\InvalidArgumentException
      */
     public function testSlashEscaping()
     {

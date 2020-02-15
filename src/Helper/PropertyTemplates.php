@@ -2,8 +2,14 @@
 
 declare(strict_types=1);
 
-namespace NeoVg\Struct;
+namespace NeoVg\Struct\Helper;
 
+use NeoVg\Struct\StructAbstract;
+use NeoVg\Struct\StructProperty\DefaultProperty;
+
+/**
+ * Class PropertyTemplates
+ */
 class PropertyTemplates
 {
     /**
@@ -14,11 +20,11 @@ class PropertyTemplates
     /**
      * @param string $className
      *
-     * @return StructProperty[]|null
+     * @return DefaultProperty[]|null
      */
     public static function getTemplate(string $className): ?array
     {
-        return static::$_templates[$className] ?? null;
+        return static::$_templates[static::_normalizeClassName($className)] ?? null;
     }
 
     /**
@@ -28,7 +34,7 @@ class PropertyTemplates
     public static function setTemplate(string $className, array $properties): void
     {
         if (isset(static::$_templates[$className])) {
-            trigger_error(sprintf('Property template for class %s is already set', $className));
+            trigger_error(sprintf('Property template for class %s is already set', $className), E_USER_ERROR);
         }
 
         static::$_templates[$className] = $properties;
@@ -39,9 +45,9 @@ class PropertyTemplates
      *
      * @return string
      */
-    private function _normalizeClassName(string $className): string
+    private static function _normalizeClassName(string $className): string
     {
-        if (preg_match('/^Mock_StructAbstract_', $className)) {
+        if (preg_match('/^Mock_StructAbstract_/', $className)) {
             return StructAbstract::class;
         }
 
