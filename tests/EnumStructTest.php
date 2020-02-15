@@ -5,8 +5,8 @@ declare(strict_types=1);
 namespace NeoVg\Struct\Test;
 
 use NeoVg\Struct\EnumAbstract;
-use NeoVg\Struct\EnumStructProperty;
 use NeoVg\Struct\StructAbstract;
+use NeoVg\Struct\StructProperty\EnumProperty;
 use PHPUnit\Framework\Error\Error;
 use PHPUnit\Framework\TestCase;
 
@@ -58,8 +58,8 @@ class EnumStructTest extends TestCase
     public function testStructEnumProperty()
     {
         $struct = new EnumStruct();
-        $this->assertInstanceOf(EnumStructProperty::class, $struct->getProperty('nullable'));
-        $this->assertInstanceOf(EnumStructProperty::class, $struct->getProperty('notNullable'));
+        $this->assertInstanceOf(EnumProperty::class, $struct->getProperty('nullable'));
+        $this->assertInstanceOf(EnumProperty::class, $struct->getProperty('notNullable'));
     }
 
     /**

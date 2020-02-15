@@ -5,7 +5,7 @@ declare(strict_types=1);
 namespace NeoVg\Struct\Test;
 
 use NeoVg\Struct\StructAbstract;
-use NeoVg\Struct\StructProperty;
+use NeoVg\Struct\StructProperty\DefaultProperty;
 use PHPUnit\Framework\Error\Error;
 use PHPUnit\Framework\TestCase;
 
@@ -40,7 +40,7 @@ class StructAbstractTest extends TestCase
         $reflectionProperties->setAccessible(true);
 
         $reflectionProperties->setValue($this->_stub, [
-            'test' => new StructProperty(null, 'null', 'test', 'boolean', false, null),
+            'test' => new DefaultProperty(null, 'null', 'test', 'boolean', false, null),
         ]);
     }
 

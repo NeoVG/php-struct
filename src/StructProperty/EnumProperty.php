@@ -2,14 +2,16 @@
 
 declare(strict_types=1);
 
-namespace NeoVg\Struct;
+namespace NeoVg\Struct\StructProperty;
 
+use NeoVg\Struct\EnumAbstract;
+use NeoVg\Struct\StructAbstract;
 use NeoVg\Struct\Test\EnumStruct;
 
 /**
  * Class EnumStructProperty
  */
-class EnumStructProperty extends StructProperty
+class EnumProperty extends DefaultProperty
 {
     /**
      * @var EnumAbstract
@@ -62,10 +64,10 @@ class EnumStructProperty extends StructProperty
     /**
      * @param mixed $value
      *
-     * @return StructProperty
+     * @return DefaultProperty
      * @throws \TypeError
      */
-    public function setValue($value): StructProperty
+    public function setValue($value): DefaultProperty
     {
         if (!is_object($value) || !($value instanceof EnumAbstract)) {
             $class = $this->_type;
@@ -110,9 +112,9 @@ class EnumStructProperty extends StructProperty
     }
 
     /**
-     * @return StructProperty
+     * @return DefaultProperty
      */
-    public function setDirty(): StructProperty
+    public function setDirty(): DefaultProperty
     {
         if ($this->isSet()) {
             $this->_value->setDirty();
@@ -122,9 +124,9 @@ class EnumStructProperty extends StructProperty
     }
 
     /**
-     * @return StructProperty
+     * @return DefaultProperty
      */
-    public function setClean(): StructProperty
+    public function setClean(): DefaultProperty
     {
         if ($this->isSet()) {
             $this->_value->setClean();

@@ -2,10 +2,16 @@
 
 declare(strict_types=1);
 
-namespace NeoVg\Struct;
+namespace NeoVg\Struct\Helper;
 
+/**
+ * Trait TypeHelperTrait
+ */
 trait TypeHelperTrait
 {
+    /**
+     * @var array
+     */
     protected static $_internalTypes = [
         'boolean',
         'integer',

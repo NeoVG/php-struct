@@ -2,7 +2,7 @@
 
 declare(strict_types=1);
 
-namespace NeoVg\Struct;
+namespace NeoVg\Struct\Exception;
 
 /**
  * Class InvalidValueException

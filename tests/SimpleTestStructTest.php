@@ -5,7 +5,7 @@ declare(strict_types=1);
 namespace NeoVg\Struct\Test;
 
 use NeoVg\Struct\StructAbstract;
-use NeoVg\Struct\StructProperty;
+use NeoVg\Struct\StructProperty\DefaultProperty;
 use PHPUnit\Framework\TestCase;
 
 /**
@@ -66,7 +66,7 @@ class SimpleTestStructTest extends TestCase
             'stdClass' => 'stdClass',
             'default'  => 'default',
             'mixed'    => 'mixed',
-        ], array_map(function (StructProperty $property) {
+        ], array_map(function (DefaultProperty $property) {
             return $property->getName();
         }, $properties));
 
@@ -80,7 +80,7 @@ class SimpleTestStructTest extends TestCase
             'float'    => 'double',
             'stdClass' => '\stdClass',
             'mixed'    => 'mixed',
-        ], array_map(function (StructProperty $property) {
+        ], array_map(function (DefaultProperty $property) {
             return $property->getType();
         }, $properties));
     }

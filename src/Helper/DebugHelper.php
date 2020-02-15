@@ -2,16 +2,25 @@
 
 declare(strict_types=1);
 
-namespace NeoVg\Struct;
+namespace NeoVg\Struct\Helper;
 
+use NeoVg\Struct\EnumAbstract;
+use NeoVg\Struct\StructAbstract;
+use NeoVg\Struct\StructProperty\ArrayProperty;
+use NeoVg\Struct\StructProperty\DefaultProperty;
+use NeoVg\Struct\StructProperty\EnumProperty;
+
+/**
+ * Class DebugHelper
+ */
 class DebugHelper
 {
     private const IGNORED_CLASSES = [
         self::class,
         StructAbstract::class,
-        StructProperty::class,
-        ArrayStructProperty::class,
-        EnumStructProperty::class,
+        DefaultProperty::class,
+        ArrayProperty::class,
+        EnumProperty::class,
         EnumAbstract::class,
     ];
 

@@ -5,6 +5,12 @@ declare(strict_types=1);
 namespace NeoVg\Struct;
 
 use JsonSerializable;
+use NeoVg\Struct\Helper\DebugHelper;
+use NeoVg\Struct\Helper\PropertyTemplates;
+use NeoVg\Struct\Helper\TypeHelperTrait;
+use NeoVg\Struct\StructProperty\ArrayProperty;
+use NeoVg\Struct\StructProperty\DefaultProperty;
+use NeoVg\Struct\StructProperty\EnumProperty;
 
 /**
  * Class Struct
@@ -28,7 +34,7 @@ abstract class StructAbstract implements JsonSerializable
     protected $_nameInParent;
 
     /**
-     * @var StructProperty[]
+     * @var DefaultProperty[]
      */
     protected $_properties = [];
 
@@ -91,13 +97,13 @@ abstract class StructAbstract implements JsonSerializable
                     if ($existingProperty = array_values(
                             array_filter(
                                 $properties,
-                                function (StructProperty $property) use ($name) {
+                                function (DefaultProperty $property) use ($name) {
                                     return $property->getName() === $name;
                                 }
                             )
                         )[0] ?? null
                     ) {
-                        /** @var StructProperty $existingProperty */
+                        /** @var DefaultProperty $existingProperty */
                         if (
                             !class_exists($type)
                             || !class_exists($existingProperty->getType())
@@ -117,12 +123,12 @@ abstract class StructAbstract implements JsonSerializable
                     # Might throw a TypeError if the default $value has the wrong type
                     try {
                         if ($isArray) {
-                            $properties[$name] = new ArrayStructProperty($this, $source, $name, $type, $hasDefaultValue, $defaultValue);
+                            $properties[$name] = new ArrayProperty($this, $source, $name, $type, $hasDefaultValue, $defaultValue);
                         } else {
                             if ($isEnum) {
-                                $properties[$name] = new EnumStructProperty($this, $source, $name, $type, $hasDefaultValue, $defaultValue);
+                                $properties[$name] = new EnumProperty($this, $source, $name, $type, $hasDefaultValue, $defaultValue);
                             } else {
-                                $properties[$name] = new StructProperty($this, $source, $name, $type, $hasDefaultValue, $defaultValue);
+                                $properties[$name] = new DefaultProperty($this, $source, $name, $type, $hasDefaultValue, $defaultValue);
                             }
                         }
                     } catch (\TypeError $e) {
@@ -137,7 +143,7 @@ abstract class StructAbstract implements JsonSerializable
         }
 
         $this->_properties = array_map(
-            function (StructProperty $property) {
+            function (DefaultProperty $property) {
                 return clone $property;
             },
             $properties
@@ -229,7 +235,7 @@ abstract class StructAbstract implements JsonSerializable
                         if ($property->containsStruct()) {
                             /** @var StructAbstract $class */
 
-                            if ($property instanceof ArrayStructProperty) {
+                            if ($property instanceof ArrayProperty) {
                                 foreach (array_keys($value) as $key) {
                                     if (is_array($value[$key])) {
                                         $value[$key] = $class::createFromArray($value[$key], $struct, $name);
@@ -246,7 +252,7 @@ abstract class StructAbstract implements JsonSerializable
                             }
                         } elseif ($property->containsEnum()) {
                             /** @var EnumAbstract $class */
-                            /** @var EnumStructProperty $value */
+                            /** @var EnumProperty $value */
                             $value = new $class($value);
                             $value->setDirty();
                         } elseif (is_array($value) && method_exists($class, 'createFromArray')) {
@@ -261,7 +267,7 @@ abstract class StructAbstract implements JsonSerializable
                     if ($property->containsEnum()) {
                         /** @var EnumAbstract $class */
                         $class = $property->getType();
-                        /** @var EnumStructProperty $value */
+                        /** @var EnumProperty $value */
                         $value = new $class($value);
                         $value->setDirty();
                     }
@@ -375,9 +381,9 @@ abstract class StructAbstract implements JsonSerializable
      *
      * @param string $name
      *
-     * @return StructProperty|null
+     * @return DefaultProperty|null
      */
-    protected function _getProperty(string $name): ?StructProperty
+    protected function _getProperty(string $name): ?DefaultProperty
     {
         return $this->_properties[$name] ?? null;
     }
@@ -399,9 +405,9 @@ abstract class StructAbstract implements JsonSerializable
      *
      * @param string $name
      *
-     * @return StructProperty
+     * @return DefaultProperty
      */
-    public function getProperty(string $name): StructProperty
+    public function getProperty(string $name): DefaultProperty
     {
         if (!$this->hasProperty($name)) {
             trigger_error(sprintf('Undefined property: %s::$%s in %s', static::class, $name, DebugHelper::getCaller()), E_USER_ERROR);
@@ -413,7 +419,7 @@ abstract class StructAbstract implements JsonSerializable
     /**
      * Returns an array of all property objects.
      *
-     * @return StructProperty[]
+     * @return DefaultProperty[]
      */
     public function getProperties(): array
     {
@@ -423,12 +429,12 @@ abstract class StructAbstract implements JsonSerializable
     /**
      * Returns a list of all set properties.
      *
-     * @return StructProperty[]
+     * @return DefaultProperty[]
      */
     public function getSetProperties(): array
     {
         return array_values(
-            array_filter($this->_properties ?? [], function (StructProperty $property) {
+            array_filter($this->_properties ?? [], function (DefaultProperty $property) {
                 return $property->isSet();
             })
         );
@@ -437,12 +443,12 @@ abstract class StructAbstract implements JsonSerializable
     /**
      * Returns a list of all dirty properties.
      *
-     * @return StructProperty[]
+     * @return DefaultProperty[]
      */
     public function getDirtyProperties(): array
     {
         return array_values(
-            array_filter($this->getProperties(), function (StructProperty $property) {
+            array_filter($this->getProperties(), function (DefaultProperty $property) {
                 return $property->isDirty();
             })
         );
@@ -455,7 +461,7 @@ abstract class StructAbstract implements JsonSerializable
      */
     public function withDirtyPropertiesOnly(): self
     {
-        $dirtyProperties = array_filter($this->_properties, function (StructProperty $property) {
+        $dirtyProperties = array_filter($this->_properties, function (DefaultProperty $property) {
             return $property->isDirty();
         });
         $dirtyPropertiesArray = [];
@@ -566,7 +572,7 @@ abstract class StructAbstract implements JsonSerializable
         $propertiesArray = [];
         foreach ($this->_properties as $property) {
             if ($property->isSet()) {
-                /** @var StructProperty $property */
+                /** @var DefaultProperty $property */
                 $value = $property->getValue();
 
                 if (is_array($value)) {
@@ -630,7 +636,7 @@ abstract class StructAbstract implements JsonSerializable
         $propertyMetaDatas = [];
 
         foreach (($this->_properties ?? []) as $property) {
-            /** @var StructProperty $property */
+            /** @var DefaultProperty $property */
             $properties[$property->getName()] = $property->getValue();
             $propertyMetaDatas[$property->getName()] = $property->__debugInfo();
         }
@@ -638,10 +644,10 @@ abstract class StructAbstract implements JsonSerializable
         $properties += [
             '[_isDirty]'        => $this->isDirty(),
             '[properties]'      => $propertyMetaDatas,
-            '[setProperties]'   => array_map(function (StructProperty $property) {
+            '[setProperties]'   => array_map(function (DefaultProperty $property) {
                 return $property->getName();
             }, $this->getSetProperties()),
-            '[dirtyProperties]' => array_map(function (StructProperty $property) {
+            '[dirtyProperties]' => array_map(function (DefaultProperty $property) {
                 return $property->getName();
             }, $this->getDirtyProperties()),
         ];
@@ -660,7 +666,7 @@ abstract class StructAbstract implements JsonSerializable
         $propertyMetaDatas = [];
 
         foreach ($this->_properties as $property) {
-            if ($property instanceof ArrayStructProperty && $property->isSet()) {
+            if ($property instanceof ArrayProperty && $property->isSet()) {
                 $properties[$property->getName()] = array_map(
                     function ($subValue) {
                         if (is_object($subValue) && $subValue instanceof StructAbstract) {
@@ -672,7 +678,7 @@ abstract class StructAbstract implements JsonSerializable
                     $property->getValue()
                 );
             } else {
-                /** @var StructProperty $property */
+                /** @var DefaultProperty $property */
                 $properties[$property->getName()] = (is_object($property->getValue()) && $property->getValue() instanceof StructAbstract)
                     ? $property->getValue()->debugInfo()
                     : $property->getValue();
@@ -684,10 +690,10 @@ abstract class StructAbstract implements JsonSerializable
         $properties += [
             '[_isDirty]'        => $this->isDirty(),
             '[properties]'      => $propertyMetaDatas,
-            '[setProperties]'   => array_map(function (StructProperty $property) {
+            '[setProperties]'   => array_map(function (DefaultProperty $property) {
                 return $property->getName();
             }, $this->getSetProperties()),
-            '[dirtyProperties]' => array_map(function (StructProperty $property) {
+            '[dirtyProperties]' => array_map(function (DefaultProperty $property) {
                 return $property->getName();
             }, $this->getDirtyProperties()),
         ];

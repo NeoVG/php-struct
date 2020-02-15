@@ -2,20 +2,22 @@
 
 declare(strict_types=1);
 
-namespace NeoVg\Struct;
+namespace NeoVg\Struct\StructProperty;
+
+use NeoVg\Struct\StructAbstract;
 
 /**
  * Class ArrayStructProperty
  */
-class ArrayStructProperty extends StructProperty
+class ArrayProperty extends DefaultProperty
 {
     /**
      * @param mixed $value
      *
-     * @return StructProperty
+     * @return DefaultProperty
      * @throws \TypeError
      */
-    public function setValue($value): StructProperty
+    public function setValue($value): DefaultProperty
     {
         $this->_checkTypes($value);
 
@@ -27,10 +29,9 @@ class ArrayStructProperty extends StructProperty
     }
 
     /**
-     * @return StructProperty
-     * @throws NotSetException
+     * @return DefaultProperty
      */
-    public function setClean(): StructProperty
+    public function setClean(): DefaultProperty
     {
         if ($this->containsStruct() && $this->_value !== null) {
             foreach (array_keys($this->_value) as $key) {

@@ -5,6 +5,8 @@ declare(strict_types=1);
 namespace NeoVg\Struct;
 
 use JsonSerializable;
+use NeoVg\Struct\Exception\InvalidValueException;
+use NeoVg\Struct\Helper\DebugHelper;
 
 abstract class EnumAbstract implements JsonSerializable
 {

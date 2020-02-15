@@ -2,14 +2,16 @@
 
 declare(strict_types=1);
 
-namespace NeoVg\Struct;
+namespace NeoVg\Struct\StructProperty;
+
+use NeoVg\Struct\StructAbstract;
 
 /**
  * Class StructProperty
  *
  * Represents one property in a Struct.
  */
-class StructProperty
+class DefaultProperty
 {
     /**
      * @var StructAbstract
@@ -183,7 +185,7 @@ class StructProperty
      *
      * @param mixed $value
      *
-     * @return StructProperty
+     * @return DefaultProperty
      * @throws \TypeError
      */
     public function setValue($value): self
@@ -229,7 +231,7 @@ class StructProperty
     /**
      * Indicates that this property has been set since its creation.
      *
-     * @return StructProperty
+     * @return DefaultProperty
      */
     public function setDirty(): self
     {
@@ -243,7 +245,7 @@ class StructProperty
     /**
      * Shortcut for setting this property to be clean.
      *
-     * @return StructProperty
+     * @return DefaultProperty
      */
     public function setClean(): self
     {
