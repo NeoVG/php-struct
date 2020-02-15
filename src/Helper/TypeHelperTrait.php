@@ -12,7 +12,7 @@ trait TypeHelperTrait
     /**
      * @var array
      */
-    protected static $_internalTypes = [
+    private $_internalTypes = [
         'boolean',
         'integer',
         'double',
@@ -45,7 +45,7 @@ trait TypeHelperTrait
         }
 
         # If type is internal, immediately return
-        if (in_array($type, static::$_internalTypes)) {
+        if (in_array($type, $this->_internalTypes)) {
             return $type;
         }
 

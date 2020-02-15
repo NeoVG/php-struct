@@ -4,8 +4,6 @@ declare(strict_types=1);
 
 namespace NeoVg\Struct\StructProperty;
 
-use NeoVg\Struct\StructAbstract;
-
 /**
  * Class ArrayStructProperty
  */
@@ -29,18 +27,10 @@ class ArrayProperty extends DefaultProperty
     }
 
     /**
-     * @return DefaultProperty
+     * @return $this
      */
     public function setClean(): DefaultProperty
     {
-        if ($this->containsStruct() && $this->_value !== null) {
-            foreach (array_keys($this->_value) as $key) {
-                /** @var StructAbstract $value */
-                $value = $this->_value[$key];
-                $value->clean(false);
-            }
-        }
-
         $this->_isDirty = false;
 
         return $this;
@@ -83,9 +73,10 @@ class ArrayProperty extends DefaultProperty
      * @param int|string $key
      * @param            $value
      *
+     * @return
      * @throws \TypeError
      */
-    public function checkValue($key, $value): void
+    public function checkValue($key, $value)
     {
         if (!$this->_isOfValidType($value)) {
             throw new \TypeError(sprintf('Key %s in argument 1 passed to %s::%s() must be of type %s, %s given',
@@ -96,5 +87,7 @@ class ArrayProperty extends DefaultProperty
                 gettype($value)
             ));
         }
+
+        return $value;
     }
 }

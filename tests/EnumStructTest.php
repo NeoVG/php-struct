@@ -4,47 +4,17 @@ declare(strict_types=1);
 
 namespace NeoVg\Struct\Test;
 
-use NeoVg\Struct\EnumAbstract;
-use NeoVg\Struct\StructAbstract;
 use NeoVg\Struct\StructProperty\EnumProperty;
+use NeoVg\Struct\Test\Enum\NotNullableEnum;
+use NeoVg\Struct\Test\Enum\NullableEnum;
+use NeoVg\Struct\Test\Struct\DefaultEnumStruct;
+use NeoVg\Struct\Test\Struct\EnumStruct;
 use PHPUnit\Framework\Error\Error;
 use PHPUnit\Framework\TestCase;
 
 /**
- * Class NullableEnum
+ * Class EnumStructTest
  */
-class NullableStructEnum extends EnumAbstract
-{
-    const NULL = null;
-}
-
-/**
- * Class NotNullableEnum
- */
-class NotNullableStructEnum extends EnumAbstract
-{
-    const FOO = 'foo';
-}
-
-/**
- * @property NullableStructEnum                       $nullable
- * @property \NeoVg\Struct\Test\NotNullableStructEnum $notNullable
- *
- * @method $this withNullable(?string $value)
- * @method $this withNotNullable(string $value)
- */
-class EnumStruct extends StructAbstract
-{
-}
-
-/**
- * @property NotNullableStructEnum $default
- */
-class DefaultEnumStruct extends StructAbstract
-{
-    protected $default = NotNullableStructEnum::FOO;
-}
-
 class EnumStructTest extends TestCase
 {
     ####################################################################################################################
@@ -70,8 +40,8 @@ class EnumStructTest extends TestCase
     {
         $struct = new DefaultEnumStruct();
         $this->assertNotNull($struct->default);
-        $this->assertInstanceOf(NotNullableStructEnum::class, $struct->default);
-        $this->assertEquals(NotNullableStructEnum::FOO, $struct->default->getValue());
+        $this->assertInstanceOf(NotNullableEnum::class, $struct->default);
+        $this->assertEquals(NotNullableEnum::FOO, $struct->default->getValue());
     }
 
     ####################################################################################################################
@@ -95,7 +65,7 @@ class EnumStructTest extends TestCase
     {
         $struct = EnumStruct::createFromArray(['nullable' => null]);
         $this->assertNotNull($struct->nullable);
-        $this->assertInstanceOf(NullableStructEnum::class, $struct->nullable);
+        $this->assertInstanceOf(NullableEnum::class, $struct->nullable);
         $this->assertNull($struct->nullable->getValue());
     }
 
@@ -105,10 +75,10 @@ class EnumStructTest extends TestCase
      */
     public function testStructCreateFromArrayOkValue()
     {
-        $struct = EnumStruct::createFromArray(['notNullable' => NotNullableStructEnum::FOO]);
+        $struct = EnumStruct::createFromArray(['notNullable' => NotNullableEnum::FOO]);
         $this->assertNotNull($struct->notNullable);
-        $this->assertInstanceOf(NotNullableStructEnum::class, $struct->notNullable);
-        $this->assertEquals(NotNullableStructEnum::FOO, $struct->notNullable->getValue());
+        $this->assertInstanceOf(NotNullableEnum::class, $struct->notNullable);
+        $this->assertEquals(NotNullableEnum::FOO, $struct->notNullable->getValue());
     }
 
     ####################################################################################################################
@@ -123,13 +93,13 @@ class EnumStructTest extends TestCase
     {
         $struct = (new EnumStruct())
             ->withNullable(null)
-            ->withNotNullable(NotNullableStructEnum::FOO);
+            ->withNotNullable(NotNullableEnum::FOO);
 
         $this->assertNotNull($struct->notNullable);
-        $this->assertInstanceOf(NotNullableStructEnum::class, $struct->notNullable);
+        $this->assertInstanceOf(NotNullableEnum::class, $struct->notNullable);
 
         $this->assertNotNull($struct->nullable);
-        $this->assertInstanceOf(NullableStructEnum::class, $struct->nullable);
+        $this->assertInstanceOf(NullableEnum::class, $struct->nullable);
     }
 
     ####################################################################################################################
@@ -143,14 +113,14 @@ class EnumStructTest extends TestCase
     public function testStructMagicSetterWithEnumObjects()
     {
         $struct = new EnumStruct();
-        $struct->nullable = new NullableStructEnum();
-        $struct->notNullable = new NotNullableStructEnum(NotNullableStructEnum::FOO);
+        $struct->nullable = new NullableEnum();
+        $struct->notNullable = new NotNullableEnum(NotNullableEnum::FOO);
 
         $this->assertNotNull($struct->nullable);
-        $this->assertInstanceOf(NullableStructEnum::class, $struct->nullable);
+        $this->assertInstanceOf(NullableEnum::class, $struct->nullable);
 
         $this->assertNotNull($struct->notNullable);
-        $this->assertInstanceOf(NotNullableStructEnum::class, $struct->notNullable);
+        $this->assertInstanceOf(NotNullableEnum::class, $struct->notNullable);
     }
 
     /**
@@ -161,15 +131,15 @@ class EnumStructTest extends TestCase
     {
         $struct = new EnumStruct();
         $struct->nullable = null;
-        $struct->notNullable = NotNullableStructEnum::FOO;
+        $struct->notNullable = NotNullableEnum::FOO;
 
         $this->assertNotNull($struct->nullable);
-        $this->assertInstanceOf(NullableStructEnum::class, $struct->nullable);
+        $this->assertInstanceOf(NullableEnum::class, $struct->nullable);
         $this->assertNull($struct->nullable->getValue());
 
         $this->assertNotNull($struct->notNullable);
-        $this->assertInstanceOf(NotNullableStructEnum::class, $struct->notNullable);
-        $this->assertEquals(NotNullableStructEnum::FOO, $struct->notNullable->getValue());
+        $this->assertInstanceOf(NotNullableEnum::class, $struct->notNullable);
+        $this->assertEquals(NotNullableEnum::FOO, $struct->notNullable->getValue());
     }
 
     /**
@@ -180,15 +150,15 @@ class EnumStructTest extends TestCase
     {
         $struct = new EnumStruct();
         $struct->nullable->setValue(null);
-        $struct->notNullable->setValue(NotNullableStructEnum::FOO);
+        $struct->notNullable->setValue(NotNullableEnum::FOO);
 
         $this->assertNotNull($struct->nullable);
-        $this->assertInstanceOf(NullableStructEnum::class, $struct->nullable);
+        $this->assertInstanceOf(NullableEnum::class, $struct->nullable);
         $this->assertNull($struct->nullable->getValue());
 
         $this->assertNotNull($struct->notNullable);
-        $this->assertInstanceOf(NotNullableStructEnum::class, $struct->notNullable);
-        $this->assertEquals(NotNullableStructEnum::FOO, $struct->notNullable->getValue());
+        $this->assertInstanceOf(NotNullableEnum::class, $struct->notNullable);
+        $this->assertEquals(NotNullableEnum::FOO, $struct->notNullable->getValue());
     }
 
     ####################################################################################################################
@@ -212,7 +182,7 @@ class EnumStructTest extends TestCase
     public function testStructIsSetFalseWithEmptyEnum()
     {
         $struct = new EnumStruct();
-        $struct->nullable = new NullableStructEnum();
+        $struct->nullable = new NullableEnum();
         $this->assertFalse($struct->isSet('nullable'));
     }
 
@@ -223,7 +193,7 @@ class EnumStructTest extends TestCase
     public function testStructIsSetTrueWithEnumInput()
     {
         $struct = new EnumStruct();
-        $struct->nullable = new NullableStructEnum(null);
+        $struct->nullable = new NullableEnum(null);
         $this->assertTrue($struct->isSet('nullable'));
     }
 
@@ -270,7 +240,7 @@ class EnumStructTest extends TestCase
     public function testStructIsDirtyWithEmptyEnum()
     {
         $struct = new EnumStruct();
-        $struct->nullable = new NullableStructEnum();
+        $struct->nullable = new NullableEnum();
         $this->assertFalse($struct->isDirty('nullable'));
     }
 
@@ -281,7 +251,7 @@ class EnumStructTest extends TestCase
     public function testStructIsDirtyOIsTrueWithEnumInput()
     {
         $struct = new EnumStruct();
-        $struct->nullable = new NullableStructEnum(null);
+        $struct->nullable = new NullableEnum(null);
         $this->assertTrue($struct->isDirty('nullable'));
     }
 
@@ -331,7 +301,7 @@ class EnumStructTest extends TestCase
     public function testStructSetDirtyWithEmptyEnum()
     {
         $struct = new EnumStruct();
-        $struct->nullable = new NullableStructEnum();
+        $struct->nullable = new NullableEnum();
 
         $struct->setDirty('nullable');
         $this->assertFalse($struct->isDirty());
@@ -375,7 +345,7 @@ class EnumStructTest extends TestCase
     public function testStructSetCleanWithEmptyEnum()
     {
         $struct = new EnumStruct();
-        $struct->nullable = new NullableStructEnum();
+        $struct->nullable = new NullableEnum();
 
         $struct->setClean('nullable');
         $this->assertFalse($struct->isDirty());
@@ -389,7 +359,7 @@ class EnumStructTest extends TestCase
     public function testStructSetCleanOk()
     {
         $struct = new EnumStruct();
-        $struct->nullable = new NullableStructEnum(null);
+        $struct->nullable = new NullableEnum(null);
         $this->assertTrue($struct->isDirty('nullable'));
 
         $struct->setClean('nullable');
@@ -407,12 +377,12 @@ class EnumStructTest extends TestCase
     public function testStructToArray()
     {
         $struct = EnumStruct::createFromArray([
-            'nullable'    => NullableStructEnum::NULL,
-            'notNullable' => NotNullableStructEnum::FOO,
+            'nullable'    => NullableEnum::NULL,
+            'notNullable' => NotNullableEnum::FOO,
         ]);
         $array = $struct->toArray();
         $this->assertNull($array['nullable']);
-        $this->assertEquals(NotNullableStructEnum::FOO, $array['notNullable']);
+        $this->assertEquals(NotNullableEnum::FOO, $array['notNullable']);
     }
 
     ####################################################################################################################
@@ -427,7 +397,7 @@ class EnumStructTest extends TestCase
     {
         $array = [
             'nullable'    => null,
-            'notNullable' => NotNullableStructEnum::FOO,
+            'notNullable' => NotNullableEnum::FOO,
         ];
 
         $struct = EnumStruct::createFromArray($array);

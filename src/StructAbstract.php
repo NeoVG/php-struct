@@ -11,6 +11,8 @@ use NeoVg\Struct\Helper\TypeHelperTrait;
 use NeoVg\Struct\StructProperty\ArrayProperty;
 use NeoVg\Struct\StructProperty\DefaultProperty;
 use NeoVg\Struct\StructProperty\EnumProperty;
+use NeoVg\Struct\StructProperty\StructArrayProperty;
+use NeoVg\Struct\StructProperty\StructProperty;
 
 /**
  * Class Struct
@@ -91,6 +93,8 @@ abstract class StructAbstract implements JsonSerializable
                         trigger_error(sprintf('Cannot parse definition for %s::%s, %s is no valid internal datatype and no known class name.', static::class, $name, $type), E_USER_ERROR);
                     }
                     $type = $realType;
+
+                    $isStruct = class_exists($type) && is_subclass_of($type, StructAbstract::class);
                     $isEnum = class_exists($type) && is_subclass_of($type, EnumAbstract::class);
 
                     # Check if a property with the same name has already been defined and if we are allowed to redefine it.
@@ -122,14 +126,16 @@ abstract class StructAbstract implements JsonSerializable
 
                     # Might throw a TypeError if the default $value has the wrong type
                     try {
-                        if ($isArray) {
+                        if ($isArray && $isStruct) {
+                            $properties[$name] = new StructArrayProperty($this, $source, $name, $type, $hasDefaultValue, $defaultValue);
+                        } elseif ($isArray) {
                             $properties[$name] = new ArrayProperty($this, $source, $name, $type, $hasDefaultValue, $defaultValue);
+                        } elseif ($isStruct) {
+                            $properties[$name] = new StructProperty($this, $source, $name, $type, $hasDefaultValue, $defaultValue);
+                        } elseif ($isEnum) {
+                            $properties[$name] = new EnumProperty($this, $source, $name, $type, $hasDefaultValue, $defaultValue);
                         } else {
-                            if ($isEnum) {
-                                $properties[$name] = new EnumProperty($this, $source, $name, $type, $hasDefaultValue, $defaultValue);
-                            } else {
-                                $properties[$name] = new DefaultProperty($this, $source, $name, $type, $hasDefaultValue, $defaultValue);
-                            }
+                            $properties[$name] = new DefaultProperty($this, $source, $name, $type, $hasDefaultValue, $defaultValue);
                         }
                     } catch (\TypeError $e) {
                         trigger_error(sprintf('Default value for property %s $%s in class %s is of invalid type %s', $type, $name, $source, gettype($defaultValue)), E_USER_ERROR);
@@ -161,30 +167,17 @@ abstract class StructAbstract implements JsonSerializable
     public static function createFromJson(?string $jsonProperties): self
     {
         if ($jsonProperties === null) {
-            throw new \JsonException(
-                'Null input'
-            );
+            throw new \JsonException('Null input');
         }
 
         if ($jsonProperties === '') {
-            throw new \JsonException(
-                'Empty input'
-            );
+            throw new \JsonException('Empty input');
         }
 
-        $arrayProperties = json_decode($jsonProperties, true);
-
-        if (json_last_error() !== JSON_ERROR_NONE) {
-            throw new \JsonException(
-                json_last_error_msg(),
-                json_last_error()
-            );
-        }
+        $arrayProperties = json_decode($jsonProperties, true, JSON_THROW_ON_ERROR);
 
         if (!is_array($arrayProperties)) {
-            throw new \JsonException(
-                'Decoded input is not an array'
-            );
+            throw new \JsonException('Decoded input is not an array');
         }
 
         return static::createFromArray($arrayProperties);
@@ -242,7 +235,7 @@ abstract class StructAbstract implements JsonSerializable
                                     }
 
                                     try {
-                                        $property->checkValue($key, $value[$key]);
+                                        $value[$key] = $property->checkValue($key, $value[$key]);
                                     } catch (\TypeError $e) {
                                         trigger_error(sprintf('%s in %s', $e->getMessage(), DebugHelper::getCaller()), E_USER_ERROR);
                                     }

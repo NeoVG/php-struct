@@ -5,35 +5,8 @@ declare(strict_types=1);
 namespace NeoVg\Struct\Test;
 
 use NeoVg\Struct\StructAbstract;
+use NeoVg\Struct\Test\Struct\RedefinePropertyStruct;
 use PHPUnit\Framework\TestCase;
-
-/**
- * Class A
- */
-class A
-{
-}
-
-/**
- * Class B
- */
-class B extends A
-{
-}
-
-/**
- * @property A $foo
- */
-class DefinePropertyStruct extends StructAbstract
-{
-}
-
-/**
- * @property B $foo
- */
-class RedefinePropertyStruct extends DefinePropertyStruct
-{
-}
 
 /**
  * Class RedefinedPropertiesTest
@@ -48,7 +21,7 @@ class RedefinedPropertiesTest extends TestCase
     {
         $instance = new RedefinePropertyStruct();
         $this->assertEquals(
-            'NeoVg\Struct\Test\RedefinePropertyStruct',
+            'NeoVg\Struct\Test\Struct\RedefinePropertyStruct',
             $instance->getProperty('foo')->getClass()
         );
     }

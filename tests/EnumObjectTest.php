@@ -4,31 +4,10 @@ declare(strict_types=1);
 
 namespace NeoVg\Struct\Test;
 
-use NeoVg\Struct\EnumAbstract;
+use NeoVg\Struct\Test\Enum\NotNullableEnum;
+use NeoVg\Struct\Test\Enum\NullableEnum;
 use PHPUnit\Framework\Error\Error;
 use PHPUnit\Framework\TestCase;
-
-/**
- * Class NotNullableEnum
- */
-class NotNullableEnum extends EnumAbstract
-{
-    const FOO   = 'foo';
-    const BAR   = 1;
-    const BLA   = true;
-    const FASEL = false;
-}
-
-/**
- * Class NullableEnum
- */
-class NullableEnum extends NotNullableEnum
-{
-    /**
-     *
-     */
-    const NULL = null;
-}
 
 /**
  * Class EnumTest

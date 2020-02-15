@@ -6,24 +6,8 @@ namespace NeoVg\Struct\Test;
 
 use NeoVg\Struct\StructAbstract;
 use NeoVg\Struct\StructProperty\DefaultProperty;
+use NeoVg\Struct\Test\Struct\SimpleTestStruct;
 use PHPUnit\Framework\TestCase;
-
-/**
- * Class NewTestStruct
- *
- * @property bool      $bool
- * @property int       $int
- * @property float     $float
- * @property string    $string
- * @property array     $array
- * @property \stdClass $stdClass
- * @property string    $default
- * @property mixed     $mixed
- */
-class SimpleTestStruct extends StructAbstract
-{
-    protected $default = 'default value';
-}
 
 /**
  * Class TestStructTest

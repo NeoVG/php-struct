@@ -19,7 +19,7 @@ class DefaultProperty
     protected $_parent;
 
     /**
-     * @var
+     * @var string
      */
     protected $_class;
 
@@ -32,16 +32,6 @@ class DefaultProperty
      * @var string
      */
     protected $_type;
-
-    /**
-     * @var bool
-     */
-    protected $_containsObject;
-
-    /**
-     * @var bool
-     */
-    protected $_containsStruct;
 
     /**
      * @var mixed
@@ -86,9 +76,6 @@ class DefaultProperty
             $this->_defaultValue = $defaultValue;
             $this->setValue($defaultValue);
         }
-
-        $this->_containsObject = class_exists($type);
-        $this->_containsStruct = $this->_containsObject && is_subclass_of($type, StructAbstract::class);
     }
 
     /**
@@ -129,7 +116,7 @@ class DefaultProperty
      */
     public function containsObject(): bool
     {
-        return $this->_containsObject;
+        return class_exists($this->_type);
     }
 
     /**
@@ -139,7 +126,7 @@ class DefaultProperty
      */
     public function containsStruct(): bool
     {
-        return $this->_containsStruct;
+        return false;
     }
 
     /**
@@ -250,10 +237,6 @@ class DefaultProperty
     public function setClean(): self
     {
         if ($this->isSet()) {
-            if ($this->containsStruct()) {
-                $this->_value->clean(false);
-            }
-
             $this->_isDirty = false;
         }
 
@@ -297,11 +280,14 @@ class DefaultProperty
             }
         }
 
-        if (isset($this->_containsObject)) {
-            $properties['[containsObject]'] = $this->_containsObject;
+        if ($this->containsObject()) {
+            $properties['[containsObject]'] = true;
         }
-        if (isset($this->_containsStruct)) {
-            $properties['[containsStruct'] = $this->_containsStruct;
+        if ($this->containsStruct()) {
+            $properties['[containsStruct'] = true;
+        }
+        if ($this->containsEnum()) {
+            $properties['[containsEnum'] = true;
         }
 
         return $properties;

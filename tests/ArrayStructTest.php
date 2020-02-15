@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace NeoVg\Struct\Test;
 
+use NeoVg\Struct\Test\Struct\ParentStruct;
 use PHPUnit\Framework\Error\Error;
 use PHPUnit\Framework\TestCase;
 
@@ -48,7 +49,7 @@ class ArrayStructTest extends TestCase
                 [
                     'value1' => 'foo',
                 ],
-                Child\ChildStruct::createFromArray([
+                Struct\Child\ChildStruct::createFromArray([
                     'value1' => 'bar',
                 ]),
             ],
@@ -82,15 +83,15 @@ class ArrayStructTest extends TestCase
         $this->assertEquals([], $struct->childs);
 
         $struct->childs = [
-            Child\ChildStruct::createFromArray(['value1' => 'foo']),
+            Struct\Child\ChildStruct::createFromArray(['value1' => 'foo']),
         ];
-        $this->assertInstanceOf(Child\ChildStruct::class, $struct->childs[0]);
+        $this->assertInstanceOf(Struct\Child\ChildStruct::class, $struct->childs[0]);
         $this->assertEquals('foo', $struct->childs[0]->value1);
 
         $struct->childs = [
-            (new Child\ChildStruct())->value1('bar'),
+            (new Struct\Child\ChildStruct())->value1('bar'),
         ];
-        $this->assertInstanceOf(Child\ChildStruct::class, $struct->childs[0]);
+        $this->assertInstanceOf(Struct\Child\ChildStruct::class, $struct->childs[0]);
         $this->assertEquals('bar', $struct->childs[0]->value1);
     }
 }
