@@ -434,6 +434,16 @@ abstract class StructAbstract implements JsonSerializable
     }
 
     /**
+     * @deprecated Use getSetProperties() instead
+     *
+     * @return array
+     */
+    public function getSet(): array
+    {
+        return $this->getSetProperties();
+    }
+
+    /**
      * Returns a list of all dirty properties.
      *
      * @return DefaultProperty[]
@@ -445,6 +455,16 @@ abstract class StructAbstract implements JsonSerializable
                 return $property->isDirty();
             })
         );
+    }
+
+    /**
+     * @deprecated Use getDirtyProperties() instead
+     *
+     * @return array
+     */
+    public function getDirty(): array
+    {
+        return $this->getDirtyProperties();
     }
 
     /**
