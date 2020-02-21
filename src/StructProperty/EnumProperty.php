@@ -6,7 +6,6 @@ namespace NeoVg\Struct\StructProperty;
 
 use NeoVg\Struct\EnumAbstract;
 use NeoVg\Struct\StructAbstract;
-use NeoVg\Struct\Test\EnumStruct;
 
 /**
  * Class EnumStructProperty
@@ -32,9 +31,9 @@ class EnumProperty extends DefaultProperty
      */
     public function __construct(?StructAbstract $parent, string $class, string $name, string $type, bool $hasDefaultValue, $defaultValue)
     {
-        if ($hasDefaultValue && (!is_object($defaultValue) || !is_subclass_of($defaultValue, EnumStruct::class))) {
-            /** @var EnumAbstract $defaultValue */
+        if ($hasDefaultValue && (!is_object($defaultValue) || !is_subclass_of($defaultValue, EnumAbstract::class))) {
             $defaultValue = new $type($defaultValue);
+            /** @var EnumAbstract $defaultValue */
             $defaultValue->setDirty();
         }
 
