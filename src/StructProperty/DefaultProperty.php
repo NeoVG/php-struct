@@ -180,7 +180,7 @@ class DefaultProperty
         if (!$this->_isOfValidType($value)) {
             throw new \TypeError(
                 sprintf('Argument 1 passed to %s::%s() must be of type %s, %s given',
-                    static::class,
+                    get_class($this->_parent),
                     $this->_name,
                     $this->_type,
                     gettype($value)
