@@ -40,6 +40,10 @@ abstract class StructAbstract implements JsonSerializable
      */
     protected $_properties = [];
 
+    ####################################################################################################################
+    # Setup
+    ####################################################################################################################
+
     /**
      * StructAbstract constructor.
      *
@@ -156,48 +160,9 @@ abstract class StructAbstract implements JsonSerializable
         );
     }
 
-    /**
-     * Returns a struct object with properties set from an JSON array.
-     *
-     * @param string|null $jsonProperties
-     *
-     * @return static
-     * @throws \JsonException
-     */
-    public static function createFromJson(?string $jsonProperties): self
-    {
-        if ($jsonProperties === null) {
-            throw new \JsonException('Null input');
-        }
-
-        if ($jsonProperties === '') {
-            throw new \JsonException('Empty input');
-        }
-
-        $arrayProperties = json_decode($jsonProperties, true, JSON_THROW_ON_ERROR);
-
-        if (!is_array($arrayProperties)) {
-            throw new \JsonException('Decoded input is not an array');
-        }
-
-        return static::createFromArray($arrayProperties);
-    }
-
-    /**
-     * Same as createFromJson(), but does return null instead of throwing an exception on error.
-     *
-     * @param string|null $jsonProperties
-     *
-     * @return static|null
-     */
-    public static function createFromJsonNullOnError(?string $jsonProperties): ?self
-    {
-        try {
-            return static::createFromJson($jsonProperties);
-        } catch (\JsonException $e) {
-            return null;
-        }
-    }
+    ####################################################################################################################
+    # Creators
+    ####################################################################################################################
 
     /**
      * Returns a struct object with properties set from an array.
@@ -276,29 +241,51 @@ abstract class StructAbstract implements JsonSerializable
     }
 
     /**
-     * Magic isset for the properties of the struct.
-     * Throws a notice if you try to access a non-existing property.
+     * Returns a struct object with properties set from an JSON array.
      *
-     * @param string $name
+     * @param string|null $jsonProperties
      *
-     * @return bool|void
+     * @return static
+     * @throws \JsonException
      */
-    public final function __isset(string $name)
+    public static function createFromJson(?string $jsonProperties): self
     {
-        return $this->getProperty($name)->isSet();
+        if ($jsonProperties === null) {
+            throw new \JsonException('Null input');
+        }
+
+        if ($jsonProperties === '') {
+            throw new \JsonException('Empty input');
+        }
+
+        $arrayProperties = json_decode($jsonProperties, true, JSON_THROW_ON_ERROR);
+
+        if (!is_array($arrayProperties)) {
+            throw new \JsonException('Decoded input is not an array');
+        }
+
+        return static::createFromArray($arrayProperties);
     }
 
     /**
-     * Returns whether a property value has been set since instanciating this object.
+     * Same as createFromJson(), but does return null instead of throwing an exception on error.
      *
-     * @param string $name
+     * @param string|null $jsonProperties
      *
-     * @return bool
+     * @return static|null
      */
-    public function isSet(string $name): bool
+    public static function createFromJsonNullOnError(?string $jsonProperties): ?self
     {
-        return $this->getProperty($name)->isSet();
+        try {
+            return static::createFromJson($jsonProperties);
+        } catch (\JsonException $e) {
+            return null;
+        }
     }
+
+    ####################################################################################################################
+    # Setter
+    ####################################################################################################################
 
     /**
      * Magic setter for the properties of the struct.
@@ -356,6 +343,10 @@ abstract class StructAbstract implements JsonSerializable
         return $this;
     }
 
+    ####################################################################################################################
+    # Getter
+    ####################################################################################################################
+
     /**
      * Magic getter for the properties of the struct.
      * Throws a notice if you try to access a non-existing property.
@@ -369,15 +360,140 @@ abstract class StructAbstract implements JsonSerializable
         return $this->getProperty($name)->getValue();
     }
 
+    ####################################################################################################################
+    # Set State
+    ####################################################################################################################
+
+    /**
+     * Magic isset for the properties of the struct.
+     * Throws a notice if you try to access a non-existing property.
+     *
+     * @param string $name
+     *
+     * @return bool|void
+     */
+    public final function __isset(string $name)
+    {
+        return $this->getProperty($name)->isSet();
+    }
+
+    /**
+     * Returns whether a property value has been set since instanciating this object.
+     *
+     * @param string $name
+     *
+     * @return bool
+     */
+    public function isSet(string $name): bool
+    {
+        return $this->getProperty($name)->isSet();
+    }
+
     /**
      * @param string $name
      *
-     * @return DefaultProperty
+     * @return $this
      */
     public function unset(string $name)
     {
-        return $this->getProperty($name)->unsetValue();
+        $this->getProperty($name)->unsetValue();
+
+        return $this;
     }
+
+    ####################################################################################################################
+    # Dirty State
+    ####################################################################################################################
+
+    /**
+     * Returns whether any of this structs properties has been changed since the objects initialisation.
+     *
+     * @param string|null $name
+     *
+     * @return bool
+     */
+    public function isDirty(string $name = null): bool
+    {
+        if ($name === null) {
+            foreach (($this->_properties ?? []) as $property) {
+                if ($property->isDirty()) {
+                    return true;
+                }
+            }
+
+            return false;
+        }
+
+        return $this->getProperty($name)->isDirty();
+    }
+
+    /**
+     * Sets the dirty-status of a property.
+     *
+     * @param string $name
+     *
+     * @return static
+     */
+    public function setDirty(string $name): self
+    {
+        $this->getProperty($name)->setDirty();
+
+        $this->_setDirtyStateInParent();
+
+        return $this;
+    }
+
+    /**
+     * If this struct itself is a property in another struct, then its dirty-state there needs to be updated if the dirty-state of one of its properties changes.
+     */
+    protected function _setDirtyStateInParent(): void
+    {
+        if ($this->_parent !== null) {
+            if ($this->isDirty() && !$this->_parent->isDirty($this->_nameInParent)) {
+                $this->_parent->setDirty($this->_nameInParent);
+            } elseif (!$this->isDirty() && $this->_parent->isDirty($this->_nameInParent)) {
+                $this->_parent->setClean($this->_nameInParent);
+            }
+        }
+    }
+
+    /**
+     * @param string $name
+     *
+     * @return $this
+     */
+    public function setClean(string $name): self
+    {
+        $this->getProperty($name)->setClean();
+
+        $this->_setDirtyStateInParent();
+
+        return $this;
+    }
+
+    /**
+     * Marks all properties as not dirty.
+     *
+     * @param bool $cascade
+     *
+     * @return $this
+     */
+    public function clean(bool $cascade = true): self
+    {
+        foreach ($this->getDirtyProperties() as $property) {
+            $property->setClean();
+        }
+
+        if ($cascade) {
+            $this->_setDirtyStateInParent();
+        }
+
+        return $this;
+    }
+
+    ####################################################################################################################
+    # Properties
+    ####################################################################################################################
 
     /**
      * Returns a property object.
@@ -429,6 +545,10 @@ abstract class StructAbstract implements JsonSerializable
         return $this->_properties ?? [];
     }
 
+    ####################################################################################################################
+    # Set Properties
+    ####################################################################################################################
+
     /**
      * Returns a list of all set properties.
      *
@@ -452,6 +572,10 @@ abstract class StructAbstract implements JsonSerializable
     {
         return $this->getSetProperties();
     }
+
+    ####################################################################################################################
+    # Dirty Properties
+    ####################################################################################################################
 
     /**
      * Returns a list of all dirty properties.
@@ -499,91 +623,9 @@ abstract class StructAbstract implements JsonSerializable
         return static::createFromArray($dirtyPropertiesArray);
     }
 
-    /**
-     * Returns whether any of this structs properties has been changed since the objects initialisation.
-     *
-     * @param string|null $name
-     *
-     * @return bool
-     */
-    public function isDirty(string $name = null): bool
-    {
-        if ($name === null) {
-            foreach (($this->_properties ?? []) as $property) {
-                if ($property->isDirty()) {
-                    return true;
-                }
-            }
-
-            return false;
-        }
-
-        return $this->getProperty($name)->isDirty();
-    }
-
-    /**
-     * If this struct itself is a property in another struct, then its dirty-state there needs to be updated if the dirty-state of one of its properties changes.
-     */
-    protected function _setDirtyStateInParent(): void
-    {
-        if ($this->_parent !== null) {
-            if ($this->isDirty() && !$this->_parent->isDirty($this->_nameInParent)) {
-                $this->_parent->setDirty($this->_nameInParent);
-            } elseif (!$this->isDirty() && $this->_parent->isDirty($this->_nameInParent)) {
-                $this->_parent->setClean($this->_nameInParent);
-            }
-        }
-    }
-
-    /**
-     * Sets the dirty-status of a property.
-     *
-     * @param string $name
-     *
-     * @return static
-     */
-    public function setDirty(string $name): self
-    {
-        $this->getProperty($name)->setDirty();
-
-        $this->_setDirtyStateInParent();
-
-        return $this;
-    }
-
-    /**
-     * @param string $name
-     *
-     * @return $this
-     */
-    public function setClean(string $name): self
-    {
-        $this->getProperty($name)->setClean();
-
-        $this->_setDirtyStateInParent();
-
-        return $this;
-    }
-
-    /**
-     * Marks all properties as not dirty.
-     *
-     * @param bool $cascade
-     *
-     * @return $this
-     */
-    public function clean(bool $cascade = true): self
-    {
-        foreach ($this->getDirtyProperties() as $property) {
-            $property->setClean();
-        }
-
-        if ($cascade) {
-            $this->_setDirtyStateInParent();
-        }
-
-        return $this;
-    }
+    ####################################################################################################################
+    # Type Conversion
+    ####################################################################################################################
 
     /**
      * Returns the Structs properties as associative array.
@@ -644,6 +686,10 @@ abstract class StructAbstract implements JsonSerializable
     {
         return json_encode($this, JSON_UNESCAPED_SLASHES | JSON_PRESERVE_ZERO_FRACTION | JSON_PRETTY_PRINT);
     }
+
+    ####################################################################################################################
+    # Debug
+    ####################################################################################################################
 
     /**
      * Returns an array with the virtual property structure and values for beautified output in var_dump() or Xdebug.

@@ -35,6 +35,10 @@ abstract class EnumAbstract implements JsonSerializable
      */
     protected $_isDirty = false;
 
+    ####################################################################################################################
+    # Setup
+    ####################################################################################################################
+
     /**
      * EnumAbstract constructor.
      *
@@ -52,28 +56,40 @@ abstract class EnumAbstract implements JsonSerializable
         }
     }
 
+    ####################################################################################################################
+    # Metadata
+    ####################################################################################################################
+
+    /**
+     * @return bool
+     */
+    public function hasOriginalValue(): bool
+    {
+        return $this->_hasOriginalValue;
+    }
+
+    /**
+     * @return mixed
+     */
+    public function getOriginalValue()
+    {
+        if (!$this->hasOriginalValue()) {
+            trigger_error(sprintf('Cannot access not existing original value of %s in %s', static::class, DebugHelper::getCaller()), E_USER_ERROR);
+        }
+
+        return $this->_originalValue;
+    }
+
+    ####################################################################################################################
+    # Value
+    ####################################################################################################################
+
     /**
      * @return bool
      */
     public function isSet(): bool
     {
         return $this->_isSet;
-    }
-
-    /**
-     * @param $value
-     *
-     * @return bool
-     */
-    public function isValidValue($value): bool
-    {
-        try {
-            $this->_checkValue($value);
-
-            return true;
-        } catch (InvalidValueException $e) {
-            return false;
-        }
     }
 
     /**
@@ -107,26 +123,6 @@ abstract class EnumAbstract implements JsonSerializable
     }
 
     /**
-     * @return bool
-     */
-    public function hasOriginalValue(): bool
-    {
-        return $this->_hasOriginalValue;
-    }
-
-    /**
-     * @return mixed
-     */
-    public function getOriginalValue()
-    {
-        if (!$this->hasOriginalValue()) {
-            trigger_error(sprintf('Cannot access not existing original value of %s in %s', static::class, DebugHelper::getCaller()), E_USER_ERROR);
-        }
-
-        return $this->_originalValue;
-    }
-
-    /**
      * @return $this
      */
     public function unsetValue(): self
@@ -142,6 +138,10 @@ abstract class EnumAbstract implements JsonSerializable
 
         return $this;
     }
+
+    ####################################################################################################################
+    # Dirty State
+    ####################################################################################################################
 
     /**
      * @return bool
@@ -177,6 +177,26 @@ abstract class EnumAbstract implements JsonSerializable
         return $this;
     }
 
+    ####################################################################################################################
+    # Types
+    ####################################################################################################################
+
+    /**
+     * @param $value
+     *
+     * @return bool
+     */
+    public function isValidValue($value): bool
+    {
+        try {
+            $this->_checkValue($value);
+
+            return true;
+        } catch (InvalidValueException $e) {
+            return false;
+        }
+    }
+
     /**
      * @param $value
      *
@@ -202,6 +222,10 @@ abstract class EnumAbstract implements JsonSerializable
             trigger_error($e->getMessage(), E_USER_ERROR);
         }
     }
+
+    ####################################################################################################################
+    # Type Conversion
+    ####################################################################################################################
 
     /**
      * @return EnumAbstract
