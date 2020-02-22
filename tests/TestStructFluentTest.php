@@ -175,7 +175,7 @@ class TestStructTest extends TestCase
     public function testFailType()
     {
         $this->expectException(Error::class);
-        $this->expectExceptionMessage('Argument 1 passed to NeoVg\Struct\StructProperty\DefaultProperty::bool() must be of type boolean, integer given');
+        $this->expectExceptionMessage('Argument 1 passed to NeoVg\Struct\Test\Struct\FluentTestStruct::bool() must be of type boolean, integer given');
         $this->_instance->bool(0);
     }
 
