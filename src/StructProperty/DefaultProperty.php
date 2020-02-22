@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace NeoVg\Struct\StructProperty;
 
+use NeoVg\Struct\Helper\DebugHelper;
 use NeoVg\Struct\StructAbstract;
 
 /**
@@ -180,7 +181,7 @@ class DefaultProperty
         if (!$this->_isOfValidType($value)) {
             throw new \TypeError(
                 sprintf('Argument 1 passed to %s::%s() must be of type %s, %s given',
-                    static::class,
+                    get_class($this->_parent),
                     $this->_name,
                     $this->_type,
                     gettype($value)
@@ -203,6 +204,30 @@ class DefaultProperty
     public function getValue()
     {
         return $this->_value;
+    }
+
+    /**
+     * @return $this
+     */
+    public function unsetValue()
+    {
+        if (!$this->isSet()) {
+            trigger_error(
+                sprintf(
+                    'Cannot unset already unset value of property %s::%s in %s',
+                    get_class($this->_parent),
+                    $this->_name,
+                    DebugHelper::getCaller()
+                ),
+                E_USER_ERROR
+            );
+        }
+
+        unset($this->_value);
+        $this->_isSet = false;
+        $this->_isDirty = false;
+
+        return $this;
     }
 
     /**

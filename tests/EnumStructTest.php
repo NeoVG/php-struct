@@ -220,6 +220,50 @@ class EnumStructTest extends TestCase
     }
 
     ####################################################################################################################
+    # unset()
+    ####################################################################################################################
+
+    /**
+     *
+     */
+    public function testStructUnsetErrorWithNoEnumInProperty()
+    {
+        $struct = new EnumStruct();
+        $this->expectException(Error::class);
+        $this->expectExceptionMessage('Cannot unset already unset value of property NeoVg\Struct\Test\Struct\EnumStruct::nullable');
+        $struct->unset('nullable');
+    }
+
+    /**
+     *
+     */
+    public function testStructUnsetErrorWithEmptyEnum()
+    {
+        $struct = new EnumStruct();
+        $struct->nullable = new NullableEnum();
+        $this->expectException(Error::class);
+        $this->expectExceptionMessage('Cannot unset already unset value of property NeoVg\Struct\Test\Struct\EnumStruct::nullable');
+        $struct->unset('nullable');
+    }
+
+    /**
+     * @throws \PHPUnit\Framework\ExpectationFailedException
+     * @throws \SebastianBergmann\RecursionContext\InvalidArgumentException
+     */
+    public function testStructUnsetOk()
+    {
+        $struct = new EnumStruct();
+
+        $struct->nullable = null;
+        $this->assertTrue($struct->isSet('nullable'));
+        $this->assertArrayHasKey('nullable', $struct->toArray());
+
+        $struct->unset('nullable');
+        $this->assertFalse($struct->isSet('nullable'));
+        $this->assertArrayNotHasKey('nullable', $struct->toArray());
+    }
+
+    ####################################################################################################################
     # isDirty()
     ####################################################################################################################
 

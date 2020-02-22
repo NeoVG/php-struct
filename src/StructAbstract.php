@@ -370,6 +370,16 @@ abstract class StructAbstract implements JsonSerializable
     }
 
     /**
+     * @param string $name
+     *
+     * @return DefaultProperty
+     */
+    public function unset(string $name)
+    {
+        return $this->getProperty($name)->unsetValue();
+    }
+
+    /**
      * Returns a property object.
      *
      * @param string $name
