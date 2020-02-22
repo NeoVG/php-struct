@@ -215,7 +215,7 @@ class DefaultProperty
      */
     public function getValue()
     {
-        return $this->_value;
+        return $this->_value ?? null;
     }
 
     /**
