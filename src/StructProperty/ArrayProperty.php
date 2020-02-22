@@ -9,6 +9,10 @@ namespace NeoVg\Struct\StructProperty;
  */
 class ArrayProperty extends DefaultProperty
 {
+    ####################################################################################################################
+    # Value
+    ####################################################################################################################
+
     /**
      * @param mixed $value
      *
@@ -26,6 +30,10 @@ class ArrayProperty extends DefaultProperty
         return $this;
     }
 
+    ####################################################################################################################
+    # Dirty State
+    ####################################################################################################################
+
     /**
      * @return $this
      */
@@ -34,6 +42,32 @@ class ArrayProperty extends DefaultProperty
         $this->_isDirty = false;
 
         return $this;
+    }
+
+    ####################################################################################################################
+    # Types
+    ####################################################################################################################
+
+    /**
+     * @param int|string $key
+     * @param            $value
+     *
+     * @return
+     * @throws \TypeError
+     */
+    public function checkValue($key, $value)
+    {
+        if (!$this->_isOfValidType($value)) {
+            throw new \TypeError(sprintf('Key %s in argument 1 passed to %s::%s() must be of type %s, %s given',
+                $key,
+                static::class,
+                $this->_name,
+                $this->_type,
+                gettype($value)
+            ));
+        }
+
+        return $value;
     }
 
     /**
@@ -67,27 +101,5 @@ class ArrayProperty extends DefaultProperty
                 ));
             }
         }
-    }
-
-    /**
-     * @param int|string $key
-     * @param            $value
-     *
-     * @return
-     * @throws \TypeError
-     */
-    public function checkValue($key, $value)
-    {
-        if (!$this->_isOfValidType($value)) {
-            throw new \TypeError(sprintf('Key %s in argument 1 passed to %s::%s() must be of type %s, %s given',
-                $key,
-                static::class,
-                $this->_name,
-                $this->_type,
-                gettype($value)
-            ));
-        }
-
-        return $value;
     }
 }
