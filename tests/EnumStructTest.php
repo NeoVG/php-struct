@@ -226,24 +226,24 @@ class EnumStructTest extends TestCase
     /**
      *
      */
-    public function testStructUnsetErrorWithNoEnumInProperty()
+    public function testStructUnsetOkWithNoEnumInProperty()
     {
         $struct = new EnumStruct();
-        $this->expectException(Error::class);
-        $this->expectExceptionMessage('Cannot unset already unset value of property NeoVg\Struct\Test\Struct\EnumStruct::nullable');
+        $this->assertFalse($struct->isSet('nullable'));
         $struct->unset('nullable');
+        $this->assertFalse($struct->isSet('nullable'));
     }
 
     /**
      *
      */
-    public function testStructUnsetErrorWithEmptyEnum()
+    public function testStructUnsetOkWithEmptyEnum()
     {
         $struct = new EnumStruct();
         $struct->nullable = new NullableEnum();
-        $this->expectException(Error::class);
-        $this->expectExceptionMessage('Cannot unset already unset value of property NeoVg\Struct\Test\Struct\EnumStruct::nullable');
+        $this->assertFalse($struct->isSet('nullable'));
         $struct->unset('nullable');
+        $this->assertFalse($struct->isSet('nullable'));
     }
 
     /**

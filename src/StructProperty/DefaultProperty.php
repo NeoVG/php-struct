@@ -223,21 +223,11 @@ class DefaultProperty
      */
     public function unsetValue()
     {
-        if (!$this->isSet()) {
-            trigger_error(
-                sprintf(
-                    'Cannot unset already unset value of property %s::%s in %s',
-                    get_class($this->_parent),
-                    $this->_name,
-                    DebugHelper::getCaller()
-                ),
-                E_USER_ERROR
-            );
+        if ($this->isSet()) {
+            unset($this->_value);
+            $this->_isSet = false;
+            $this->_isDirty = false;
         }
-
-        unset($this->_value);
-        $this->_isSet = false;
-        $this->_isDirty = false;
 
         return $this;
     }
