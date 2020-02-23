@@ -322,12 +322,6 @@ class DefaultProperty
         if ($this->containsObject()) {
             $properties['[containsObject]'] = true;
         }
-        if ($this->containsStruct()) {
-            $properties['[containsStruct'] = true;
-        }
-        if ($this->containsEnum()) {
-            $properties['[containsEnum'] = true;
-        }
 
         return $properties;
     }
