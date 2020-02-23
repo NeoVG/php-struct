@@ -704,21 +704,23 @@ abstract class StructAbstract implements JsonSerializable
         $properties = [];
         $propertyMetaDatas = [];
 
-        foreach (($this->_properties ?? []) as $property) {
-            /** @var DefaultProperty $property */
-            $properties[$property->getName()] = $property->getValue();
+        foreach (($this->getSetProperties() ?? []) as $property) {
+            $value = $property->getValue();
+            if (is_object($value) && $value instanceof EnumAbstract) {
+                $value = $value->getValue();
+            }
+            $properties[$property->getName()] = $value;
+        }
+        foreach (($this->getProperties() ?? []) as $property) {
             $propertyMetaDatas[$property->getName()] = $property->__debugInfo();
         }
 
         $properties += [
             '[_isDirty]'        => $this->isDirty(),
-            '[properties]'      => $propertyMetaDatas,
-            '[setProperties]'   => array_map(function (DefaultProperty $property) {
-                return $property->getName();
-            }, $this->getSetProperties()),
             '[dirtyProperties]' => array_map(function (DefaultProperty $property) {
                 return $property->getName();
             }, $this->getDirtyProperties()),
+            '[propertyObjects]'      => $propertyMetaDatas,
         ];
 
         return $properties;
@@ -734,7 +736,7 @@ abstract class StructAbstract implements JsonSerializable
         $properties = [];
         $propertyMetaDatas = [];
 
-        foreach ($this->_properties as $property) {
+        foreach ($this->getSetProperties() as $property) {
             if ($property instanceof ArrayProperty && $property->isSet()) {
                 $properties[$property->getName()] = array_map(
                     function ($subValue) {
@@ -758,13 +760,10 @@ abstract class StructAbstract implements JsonSerializable
 
         $properties += [
             '[_isDirty]'        => $this->isDirty(),
-            '[properties]'      => $propertyMetaDatas,
-            '[setProperties]'   => array_map(function (DefaultProperty $property) {
-                return $property->getName();
-            }, $this->getSetProperties()),
             '[dirtyProperties]' => array_map(function (DefaultProperty $property) {
                 return $property->getName();
             }, $this->getDirtyProperties()),
+            '[propertyObjects]'      => $propertyMetaDatas,
         ];
 
         return $properties;

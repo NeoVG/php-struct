@@ -46,4 +46,18 @@ class StructProperty extends DefaultProperty
 
         return $this;
     }
+
+    ####################################################################################################################
+    # Debug
+    ####################################################################################################################
+
+    /**
+     * @return array
+     */
+    public function __debugInfo()
+    {
+        return parent::__debugInfo() + [
+                '[containsStruct]' => true,
+            ];
+    }
 }
