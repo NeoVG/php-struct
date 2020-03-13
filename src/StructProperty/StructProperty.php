@@ -39,10 +39,10 @@ class StructProperty extends DefaultProperty
      */
     public function setClean(): DefaultProperty
     {
-        if ($this->isSet()) {
+        if ($this->_value !== null) {
             $this->_value->clean(false);
-            $this->_isDirty = false;
         }
+        $this->_isDirty = false;
 
         return $this;
     }

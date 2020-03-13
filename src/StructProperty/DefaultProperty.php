@@ -223,11 +223,9 @@ class DefaultProperty
      */
     public function unsetValue()
     {
-        if ($this->isSet()) {
-            unset($this->_value);
-            $this->_isSet = false;
-            $this->_isDirty = false;
-        }
+        unset($this->_value);
+        $this->_isSet = false;
+        $this->_isDirty = false;
 
         return $this;
     }
@@ -267,9 +265,7 @@ class DefaultProperty
      */
     public function setClean(): self
     {
-        if ($this->isSet()) {
-            $this->_isDirty = false;
-        }
+        $this->_isDirty = false;
 
         return $this;
     }

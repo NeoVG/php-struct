@@ -119,7 +119,7 @@ class EnumProperty extends DefaultProperty
      */
     public function isDirty(): bool
     {
-        if ($this->isSet()) {
+        if ($this->_value !== null) {
             return $this->_value->isDirty();
         }
 
@@ -131,7 +131,7 @@ class EnumProperty extends DefaultProperty
      */
     public function setDirty(): DefaultProperty
     {
-        if ($this->isSet()) {
+        if ($this->_value !== null) {
             $this->_value->setDirty();
         }
 
@@ -143,7 +143,7 @@ class EnumProperty extends DefaultProperty
      */
     public function setClean(): DefaultProperty
     {
-        if ($this->isSet()) {
+        if ($this->_value !== null) {
             $this->_value->setClean();
         }
 
