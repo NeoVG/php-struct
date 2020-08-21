@@ -52,7 +52,7 @@ abstract class EnumAbstract implements JsonSerializable
                 $this->_isSet = $this->_hasOriginalValue = true;
             }
         } catch (InvalidValueException $e) {
-            trigger_error(sprintf('Invalid initial value for %s in %s', static::class, DebugHelper::getCaller()), E_USER_ERROR);
+            trigger_error(sprintf('Invalid initial value %s for %s in %s', $this->_formatValueForError($value), static::class, DebugHelper::getCaller()), E_USER_ERROR);
         }
     }
 
@@ -104,7 +104,7 @@ abstract class EnumAbstract implements JsonSerializable
             $this->_isSet = true;
             $this->_isDirty = true;
         } catch (InvalidValueException $e) {
-            trigger_error(sprintf('Cannot set invalid value for %s in %s', static::class, DebugHelper::getCaller()), E_USER_ERROR);
+            trigger_error(sprintf('Cannot set invalid value %s for %s in %s', $this->_formatValueForError($value), static::class, DebugHelper::getCaller()), E_USER_ERROR);
         }
 
         return $this;
@@ -137,6 +137,33 @@ abstract class EnumAbstract implements JsonSerializable
         $this->_isDirty = false;
 
         return $this;
+    }
+
+    /**
+     * @param $value
+     *
+     * @return string
+     */
+    protected function _formatValueForError($value): string
+    {
+        if ($value === null) {
+            return 'null';
+        } elseif (is_array($value)) {
+            return '(array)';
+        } elseif (is_object($value)) {
+            return '(object)';
+        } elseif (is_bool($value)) {
+            return $value ? 'true' : 'false';
+        } elseif (is_string($value)) {
+            if (strlen($value) > 50) {
+                $value = sprintf('%s...', substr($value, 0, 50));
+            }
+            return sprintf('"%s"', $value);
+        } elseif (is_scalar($value)) {
+            return $value;
+        } else {
+            return '(unknown)';
+        }
     }
 
     ####################################################################################################################
