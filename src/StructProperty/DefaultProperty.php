@@ -54,23 +54,35 @@ class DefaultProperty
      */
     protected $_isDirty = false;
 
+    /**
+     * @var bool
+     */
+    protected $_hasFluentSetter = false;
+
+    /**
+     * @var bool
+     */
+    protected $_fluentSetterHasPrefixWith = false;
+
     ####################################################################################################################
     # Setup
     ####################################################################################################################
 
     /**
-     * StructProperty constructor.
+     * DefaultProperty constructor.
      *
-     * @param StructAbstract $parent
-     * @param string         $class
-     * @param string         $name
-     * @param string         $type
-     * @param bool           $hasDefaultValue
-     * @param mixed          $defaultValue
+     * @param StructAbstract|null $parent
+     * @param string              $class
+     * @param string              $name
+     * @param string              $type
+     * @param bool                $hasDefaultValue
+     * @param                     $defaultValue
+     * @param bool                $hasFluentSetter
+     * @param bool                $fluentSetterHasPrefixWith
      *
      * @throws \TypeError
      */
-    public function __construct(?StructAbstract $parent, string $class, string $name, string $type, bool $hasDefaultValue, $defaultValue)
+    public function __construct(?StructAbstract $parent, string $class, string $name, string $type, bool $hasDefaultValue, $defaultValue, bool $hasFluentSetter = false, bool $fluentSetterHasPrefixWith = false)
     {
         $this->_parent = $parent;
         $this->_class = $class;
@@ -81,6 +93,9 @@ class DefaultProperty
             $this->_defaultValue = $defaultValue;
             $this->setValue($defaultValue);
         }
+
+        $this->_hasFluentSetter = $hasFluentSetter;
+        $this->_fluentSetterHasPrefixWith = $fluentSetterHasPrefixWith;
     }
 
     ####################################################################################################################
@@ -164,6 +179,22 @@ class DefaultProperty
     public function getDefaultValue()
     {
         return $this->_defaultValue;
+    }
+
+    /**
+     * @return bool
+     */
+    public function hasFluentSetter(): bool
+    {
+        return $this->_hasFluentSetter;
+    }
+
+    /**
+     * @return bool
+     */
+    public function fluentSetterHasPrefixWith(): bool
+    {
+        return $this->_fluentSetterHasPrefixWith;
     }
 
     ####################################################################################################################

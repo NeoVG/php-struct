@@ -80,14 +80,17 @@ abstract class StructAbstract implements JsonSerializable
                     $docCommentString = $tmpDocCommentString . PHP_EOL . $docCommentString;
                 }
 
-                preg_match_all('/(.+?)\s+\*\s+@property(-read)? +([\w\\\]+)(\[\])? +\$(\w+)/', $docCommentString, $matches, PREG_SET_ORDER);
+                preg_match_all('/(.+?)\s+\*\s+@property(-read)? +([\w\\\]+)(\[\])? +\$(\w+)/', $docCommentString, $propertyMatches, PREG_SET_ORDER);
+                preg_match_all('/(.+?)\s+\*\s+@method +(static|\$this) +([\w]+)\(.+?\)/', $docCommentString, $setterMatches, PREG_SET_ORDER);
+
+                $setters = array_map(function (array $setterMatch) { return $setterMatch[3]; }, $setterMatches);
 
                 $properties = [];
-                foreach ($matches as $match) {
-                    $source = $match[1];
-                    $name = $match[5];
-                    $type = $match[3];
-                    $isArray = $match[4];
+                foreach ($propertyMatches as $properyMatch) {
+                    $source = $properyMatch[1];
+                    $name = $properyMatch[5];
+                    $type = $properyMatch[3];
+                    $isArray = $properyMatch[4];
 
                     # If a class property $name exists, its value is the default value for this struct property.
                     $hasDefaultValue = property_exists(static::class, $name);
@@ -101,6 +104,9 @@ abstract class StructAbstract implements JsonSerializable
 
                     $isStruct = class_exists($type) && is_subclass_of($type, StructAbstract::class);
                     $isEnum = class_exists($type) && is_subclass_of($type, EnumAbstract::class);
+
+                    $hasFluentSetter = in_array($name, $setters) || in_array(sprintf('with%s', ucfirst($name)), $setters);
+                    $fluentSetterHasPrefixWith = in_array(sprintf('with%s', ucfirst($name)), $setters);
 
                     # Check if a property with the same name has already been defined and if we are allowed to redefine it.
                     if ($existingProperty = array_values(
@@ -127,17 +133,17 @@ abstract class StructAbstract implements JsonSerializable
                     # Might throw a TypeError if the default $value has the wrong type
                     try {
                         if ($isArray && $isStruct) {
-                            $properties[$name] = new StructArrayProperty($this, $source, $name, $type, $hasDefaultValue, $defaultValue);
+                            $properties[$name] = new StructArrayProperty($this, $source, $name, $type, $hasDefaultValue, $defaultValue, $hasFluentSetter, $fluentSetterHasPrefixWith);
                         } elseif ($isArray && $isEnum) {
-                            $properties[$name] = new EnumArrayProperty($this, $source, $name, $type, $hasDefaultValue, $defaultValue);
+                            $properties[$name] = new EnumArrayProperty($this, $source, $name, $type, $hasDefaultValue, $defaultValue, $hasFluentSetter, $fluentSetterHasPrefixWith);
                         } elseif ($isArray) {
-                            $properties[$name] = new ArrayProperty($this, $source, $name, $type, $hasDefaultValue, $defaultValue);
+                            $properties[$name] = new ArrayProperty($this, $source, $name, $type, $hasDefaultValue, $defaultValue, $hasFluentSetter, $fluentSetterHasPrefixWith);
                         } elseif ($isStruct) {
-                            $properties[$name] = new StructProperty($this, $source, $name, $type, $hasDefaultValue, $defaultValue);
+                            $properties[$name] = new StructProperty($this, $source, $name, $type, $hasDefaultValue, $defaultValue, $hasFluentSetter, $fluentSetterHasPrefixWith);
                         } elseif ($isEnum) {
-                            $properties[$name] = new EnumProperty($this, $source, $name, $type, $hasDefaultValue, $defaultValue);
+                            $properties[$name] = new EnumProperty($this, $source, $name, $type, $hasDefaultValue, $defaultValue, $hasFluentSetter, $fluentSetterHasPrefixWith);
                         } else {
-                            $properties[$name] = new DefaultProperty($this, $source, $name, $type, $hasDefaultValue, $defaultValue);
+                            $properties[$name] = new DefaultProperty($this, $source, $name, $type, $hasDefaultValue, $defaultValue, $hasFluentSetter, $fluentSetterHasPrefixWith);
                         }
                     } catch (\TypeError $e) {
                         trigger_error(sprintf('Default value for property %s $%s in class %s is of invalid type %s', $type, $name, $source, gettype($defaultValue)), E_USER_ERROR);
@@ -243,7 +249,7 @@ abstract class StructAbstract implements JsonSerializable
                     }
                 }
 
-                $struct->$name($value);
+                $struct->$name = $value;
 
                 unset($value);
             }
@@ -322,26 +328,41 @@ abstract class StructAbstract implements JsonSerializable
      * Fluent setter for the properties of the struct.
      * Returns $this so calls can be chained.
      *
-     * NEW:
-     *
      * @param string $name Name of the property to be set.
      * @param array  $args Will always only have one element containing the value to be put into the property.
      *
      * @return $this
      */
-    public final function __call(string $name, array $args): StructAbstract
+    public final function __call(string $name, array $args)
     {
         $normalizedName = $name;
+        $nameHasPrefixWith = false;
         if (preg_match('/^with[A-Z]/', $name)) {
             $normalizedName = sprintf(
                 '%s%s',
                 strtolower(substr($name, 4, 1)),
                 substr($name, 5)
             );
+            $nameHasPrefixWith = true;
         }
 
         if (!($property = $this->_getProperty($normalizedName))) {
             trigger_error(sprintf('Call to undefined method %s::%s() in %s', static::class, $name, DebugHelper::getCaller()), E_USER_ERROR);
+        }
+
+        # Evil workaround to allow setters called without prefix with to act as getters under very special circumstances.
+        # This avoids errors in Twig when accessing unset properties (because Twig then automatically calls a function
+        # with the name of the unset property for some reason).
+        if ($property->fluentSetterHasPrefixWith() && !$nameHasPrefixWith && count($args) === 0) {
+            return $this->$normalizedName;
+        }
+
+        if ($property->fluentSetterHasPrefixWith() && !$nameHasPrefixWith || !$property->fluentSetterHasPrefixWith() && $nameHasPrefixWith) {
+            trigger_error(sprintf('Call to undefined method %s::%s() in %s', static::class, $name, DebugHelper::getCaller()), E_USER_ERROR);
+        }
+
+        if (count($args) === 0) {
+            trigger_error(sprintf('%s::%s() expects exactly 1 parameter, %d given in %s', static::class, $name, count($args), DebugHelper::getCaller()), E_USER_ERROR);
         }
 
         try {

@@ -22,7 +22,7 @@ class EnumProperty extends DefaultProperty
     ####################################################################################################################
 
     /**
-     * EnumStructProperty constructor.
+     * EnumProperty constructor.
      *
      * @param StructAbstract|null $parent
      * @param string              $class
@@ -30,10 +30,12 @@ class EnumProperty extends DefaultProperty
      * @param string              $type
      * @param bool                $hasDefaultValue
      * @param                     $defaultValue
+     * @param bool                $hasFluentSetter
+     * @param bool                $fluentSetterHasPrefixWith
      *
      * @throws \TypeError
      */
-    public function __construct(?StructAbstract $parent, string $class, string $name, string $type, bool $hasDefaultValue, $defaultValue)
+    public function __construct(?StructAbstract $parent, string $class, string $name, string $type, bool $hasDefaultValue, $defaultValue, bool $hasFluentSetter = false, bool $fluentSetterHasPrefixWith = false)
     {
         if ($hasDefaultValue && (!is_object($defaultValue) || !is_subclass_of($defaultValue, EnumAbstract::class))) {
             $defaultValue = new $type($defaultValue);
@@ -41,7 +43,7 @@ class EnumProperty extends DefaultProperty
             $defaultValue->setDirty();
         }
 
-        parent::__construct($parent, $class, $name, $type, $hasDefaultValue, $defaultValue);
+        parent::__construct($parent, $class, $name, $type, $hasDefaultValue, $defaultValue, $hasFluentSetter, $fluentSetterHasPrefixWith);
     }
 
     ####################################################################################################################

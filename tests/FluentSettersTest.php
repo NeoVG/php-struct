@@ -25,4 +25,15 @@ class FluentSettersTest extends TestCase
         $this->assertEquals('foo', $instance->property1);
         $this->assertEquals('bar', $instance->property2);
     }
+
+    /**
+     * @throws \PHPUnit\Framework\ExpectationFailedException
+     * @throws \SebastianBergmann\RecursionContext\InvalidArgumentException
+     */
+    public function testSetterBecomesGetter()
+    {
+        $struct = (new FluentSettersStruct())
+            ->withProperty2('foobar');
+        $this->assertEquals('foobar', $struct->property2());
+    }
 }
