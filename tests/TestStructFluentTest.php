@@ -11,7 +11,7 @@ use PHPUnit\Framework\TestCase;
 /**
  * Class TestStructTest
  */
-class TestStructTest extends TestCase
+class TestStructFluentTest extends TestCase
 {
     /**
      * @var FluentTestStruct

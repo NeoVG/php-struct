@@ -10,6 +10,7 @@ use NeoVg\Struct\Helper\PropertyTemplates;
 use NeoVg\Struct\Helper\TypeHelperTrait;
 use NeoVg\Struct\StructProperty\ArrayProperty;
 use NeoVg\Struct\StructProperty\DefaultProperty;
+use NeoVg\Struct\StructProperty\EnumArrayProperty;
 use NeoVg\Struct\StructProperty\EnumProperty;
 use NeoVg\Struct\StructProperty\StructArrayProperty;
 use NeoVg\Struct\StructProperty\StructProperty;
@@ -123,15 +124,12 @@ abstract class StructAbstract implements JsonSerializable
                         }
                     }
 
-                    # Arrays of enums are not supported yet
-                    if ($isArray && $isEnum) {
-                        trigger_error(sprintf('Incorrect definition of property %s%s $%s in class %s, arrays of enums are not suppoerted yet.', $type, $isArray, $name, $source), E_USER_ERROR);
-                    }
-
                     # Might throw a TypeError if the default $value has the wrong type
                     try {
                         if ($isArray && $isStruct) {
                             $properties[$name] = new StructArrayProperty($this, $source, $name, $type, $hasDefaultValue, $defaultValue);
+                        } elseif ($isArray && $isEnum) {
+                            $properties[$name] = new EnumArrayProperty($this, $source, $name, $type, $hasDefaultValue, $defaultValue);
                         } elseif ($isArray) {
                             $properties[$name] = new ArrayProperty($this, $source, $name, $type, $hasDefaultValue, $defaultValue);
                         } elseif ($isStruct) {
@@ -171,12 +169,11 @@ abstract class StructAbstract implements JsonSerializable
      * @param StructAbstract|null $parent
      * @param string|null         $nameInParent
      *
-     * @return static
+     * @return $this
      */
     public static function createFromArray(array $arrayProperties, ?StructAbstract $parent = null, ?string $nameInParent = null): self
     {
         $class = static::class;
-        /** @var StructAbstract $struct */
         $struct = new $class($parent, $nameInParent);
         unset($class);
 
@@ -193,7 +190,7 @@ abstract class StructAbstract implements JsonSerializable
                         if ($property->containsStruct()) {
                             /** @var StructAbstract $class */
 
-                            if ($property instanceof ArrayProperty) {
+                            if ($property instanceof StructArrayProperty) {
                                 foreach (array_keys($value) as $key) {
                                     if (is_array($value[$key])) {
                                         $value[$key] = $class::createFromArray($value[$key], $struct, $name);
@@ -210,9 +207,24 @@ abstract class StructAbstract implements JsonSerializable
                             }
                         } elseif ($property->containsEnum()) {
                             /** @var EnumAbstract $class */
-                            /** @var EnumProperty $value */
-                            $value = new $class($value);
-                            $value->setDirty();
+
+                            if ($property instanceof EnumArrayProperty) {
+                                foreach (array_keys($value) as $key) {
+                                    if (is_scalar($value[$key])) {
+                                        $value[$key] = new $class($value[$key]);
+                                    }
+
+                                    try {
+                                        $value[$key] = $property->checkValue($key, $value[$key]);
+                                    } catch (\TypeError $e) {
+                                        trigger_error(sprintf('%s in %s', $e->getMessage(), DebugHelper::getCaller()), E_USER_ERROR);
+                                    }
+                                }
+                            } else {
+                                /** @var EnumProperty $value */
+                                $value = new $class($value);
+                                $value->setDirty();
+                            }
                         } elseif (is_array($value) && method_exists($class, 'createFromArray')) {
                             $value = $class::createFromArray($value);
                         } elseif (is_string($value) && method_exists($class, 'createFromString')) {
@@ -245,7 +257,7 @@ abstract class StructAbstract implements JsonSerializable
      *
      * @param string|null $jsonProperties
      *
-     * @return static
+     * @return $this
      * @throws \JsonException
      */
     public static function createFromJson(?string $jsonProperties): self
@@ -272,7 +284,7 @@ abstract class StructAbstract implements JsonSerializable
      *
      * @param string|null $jsonProperties
      *
-     * @return static|null
+     * @return $this|null
      */
     public static function createFromJsonNullOnError(?string $jsonProperties): ?self
     {
@@ -310,10 +322,12 @@ abstract class StructAbstract implements JsonSerializable
      * Fluent setter for the properties of the struct.
      * Returns $this so calls can be chained.
      *
+     * NEW:
+     *
      * @param string $name Name of the property to be set.
      * @param array  $args Will always only have one element containing the value to be put into the property.
      *
-     * @return static
+     * @return $this
      */
     public final function __call(string $name, array $args): StructAbstract
     {
@@ -329,9 +343,7 @@ abstract class StructAbstract implements JsonSerializable
         if (!($property = $this->_getProperty($normalizedName))) {
             trigger_error(sprintf('Call to undefined method %s::%s() in %s', static::class, $name, DebugHelper::getCaller()), E_USER_ERROR);
         }
-        if (!array_key_exists(0, $args)) {
-            trigger_error(sprintf('%s::%s() expects exactly 1 parameter, 0 given in %s', static::class, $name, DebugHelper::getCaller()), E_USER_ERROR);
-        }
+
         try {
             $property->setValue($args[0]);
         } catch (\TypeError $e) {
@@ -432,7 +444,7 @@ abstract class StructAbstract implements JsonSerializable
      *
      * @param string $name
      *
-     * @return static
+     * @return $this
      */
     public function setDirty(string $name): self
     {
