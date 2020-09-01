@@ -168,22 +168,9 @@ abstract class StructAbstract implements JsonSerializable
     # Creators
     ####################################################################################################################
 
-    /**
-     * Returns a struct object with properties set from an array.
-     *
-     * @param array               $arrayProperties
-     * @param StructAbstract|null $parent
-     * @param string|null         $nameInParent
-     *
-     * @return $this
-     */
-    public static function createFromArray(array $arrayProperties, ?StructAbstract $parent = null, ?string $nameInParent = null): self
+    public function applyArrayProperties(array $arrayProperties): void
     {
-        $class = static::class;
-        $struct = new $class($parent, $nameInParent);
-        unset($class);
-
-        foreach ($struct->getProperties() as $property) {
+        foreach ($this->getProperties() as $property) {
             $name = $property->getName();
 
             if (array_key_exists($name, $arrayProperties)) {
@@ -199,7 +186,7 @@ abstract class StructAbstract implements JsonSerializable
                             if ($property instanceof StructArrayProperty) {
                                 foreach (array_keys($value) as $key) {
                                     if (is_array($value[$key])) {
-                                        $value[$key] = $class::createFromArray($value[$key], $struct, $name);
+                                        $value[$key] = $class::createFromArray($value[$key], $this, $name);
                                     }
 
                                     try {
@@ -209,7 +196,7 @@ abstract class StructAbstract implements JsonSerializable
                                     }
                                 }
                             } else {
-                                $value = $class::createFromArray($value, $struct, $name);
+                                $value = $class::createFromArray($value, $this, $name);
                             }
                         } elseif ($property->containsEnum()) {
                             /** @var EnumAbstract $class */
@@ -249,11 +236,29 @@ abstract class StructAbstract implements JsonSerializable
                     }
                 }
 
-                $struct->$name = $value;
+                $this->$name = $value;
 
                 unset($value);
             }
         }
+    }
+
+    /**
+     * Returns a struct object with properties set from an array.
+     *
+     * @param array               $arrayProperties
+     * @param StructAbstract|null $parent
+     * @param string|null         $nameInParent
+     *
+     * @return $this
+     */
+    public static function createFromArray(array $arrayProperties, ?StructAbstract $parent = null, ?string $nameInParent = null): self
+    {
+        $class = static::class;
+        $struct = new $class($parent, $nameInParent);
+        unset($class);
+
+        $struct->applyArrayProperties($arrayProperties);
 
         return $struct;
     }
@@ -718,6 +723,24 @@ abstract class StructAbstract implements JsonSerializable
     public function __toString(): string
     {
         return json_encode($this, JSON_UNESCAPED_SLASHES | JSON_PRESERVE_ZERO_FRACTION | JSON_PRETTY_PRINT);
+    }
+
+    /**
+     * @return array
+     */
+    public function __serialize(): array
+    {
+        return $this->toArray();
+    }
+
+    /**
+     * @param array $data
+     */
+    public function __unserialize(array $data): void
+    {
+        $this->_buildProperties();
+        $this->applyArrayProperties($data);
+        $this->clean();
     }
 
     ####################################################################################################################

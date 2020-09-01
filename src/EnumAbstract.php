@@ -285,4 +285,21 @@ abstract class EnumAbstract implements JsonSerializable
 
         return json_encode($this->_value, JSON_UNESCAPED_SLASHES | JSON_PRESERVE_ZERO_FRACTION | JSON_PRETTY_PRINT);
     }
+
+    /**
+     * @return array
+     */
+    public function __serialize(): array
+    {
+        return ['value' => $this->getValue()];
+    }
+
+    /**
+     * @param array $data
+     */
+    public function __unserialize(array $data): void
+    {
+        $this->_value = $this->_originalValue = $data['value'];
+        $this->_isSet = $this->_hasOriginalValue = true;
+    }
 }
