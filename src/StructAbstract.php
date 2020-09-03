@@ -236,7 +236,11 @@ abstract class StructAbstract implements JsonSerializable
                     }
                 }
 
-                $this->$name = $value;
+                if ($property->fluentSetterHasPrefixWith()) {
+                    $this->__call(sprintf('with%s', ucfirst($name)), [$value]);
+                } else {
+                    $this->__call($name, [$value]);
+                }
 
                 unset($value);
             }

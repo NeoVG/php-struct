@@ -192,4 +192,24 @@ EOD
         $instance->mixed = true;
         $this->assertIsBool($instance->mixed);
     }
+
+    /**
+     * @throws \PHPUnit\Framework\ExpectationFailedException
+     * @throws \SebastianBergmann\RecursionContext\InvalidArgumentException
+     */
+    public function testDefaultValueSomeMore()
+    {
+        $foo1 = SimpleTestStruct::createFromArray([]);
+        $this->assertEquals('default value', $foo1->default);
+
+        $foo2 = SimpleTestStruct::createFromArray([
+            'bool' => true,
+            'default' => 'foobar'
+        ]);
+        $this->assertEquals('foobar', $foo2->default);
+
+        $foo3 = SimpleTestStruct::createFromArray([]);
+        $foo3->default = 'blafasel';
+        $this->assertEquals('blafasel', $foo3->default);
+    }
 }
